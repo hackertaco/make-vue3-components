@@ -9,7 +9,12 @@
         <p class="w-10 h-10 " style="width:14.28%" v-for="day in days" :key="day">{{day}}</p>
     </section>
     <section class="flex flex-wrap text-center">
-        <p class="w-1/6 h-10" style="width:14.28%" v-for="num in daysInMonth(currentYear, currentMonth)" :key="num">{{num}}</p>
+        <p class="w-1/6 h-10" style="width:14.28%" v-for="num in startDay()" :key="num"></p>
+        <p :class="currentDateClass(num)" class="w-1/6 h-10" style="width:14.28%" v-for="num in daysInMonth()" :key="num">{{num}}</p>
+    </section>
+    <section class="flex justify-between my-4">
+        <button class="px-2 border rounded" @click="prev()">Prev</button>
+        <button class="px-2 border rounded" @click="next()">Next</button>
     </section>
 </div>
 </template>
@@ -18,17 +23,49 @@
 export default {
     data() {
         return {
-            currentMonth: new Date().getMonth() + 1,
-            currentMonthName: new Date().toLocaleString("default", {
-                month: 'long'
-            }),
+            currentDate: new Date().getUTCDate(),
+            currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
             days: ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat']
         }
     },
     methods: {
-        daysInMonth(year, month) {
-            return new Date(year, month, 0).getDate();
+        daysInMonth() {
+            return new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+        },
+        startDay() {
+            return new Date(this.currentYear, this.currentMonth).getDay()
+        },
+        next() {
+            if (this.currentMonth === 11) {
+                this.currentMonth = 0;
+                this.currentYear++
+            } else {
+                this.currentMonth++
+
+            }
+        },
+        prev() {
+            if (this.currentMonth === 0) {
+                this.currentMonth = 11;
+                this.currentYear--;
+            } else {
+                this.currentMonth--
+
+            }
+        },
+        currentDateClass(num) {
+            const calendarFullDate = new Date(this.currentYear, this.currentMonth, num).toDateString()
+            const currentFullDate = new Date().toDateString()
+            return currentFullDate === calendarFullDate ? 'text-yellow-600' : ''
+        }
+    },
+    computed: {
+        currentMonthName() {
+            return new Date(this.currentYear, this.currentMonth).toLocaleString("default", {
+                month: 'long'
+            })
+
         }
     }
 }
