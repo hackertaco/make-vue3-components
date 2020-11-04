@@ -1,9 +1,9 @@
 <template>
-<AppHeader />
+<AppHeader @open-login-modal="isLoginOpen=true" />
 <div class="w-full flex">
     <router-view></router-view>
 </div>
-<LoginModal />
+<LoginModal v-if="isLoginOpen" @close-login='isLoginOpen=false' />
 </template>
 
 <script>
@@ -15,6 +15,11 @@ export default {
         AppHeader,
         LoginModal
     },
+    data() {
+        return {
+            isLoginOpen: false,
+        }
+    }
 
 }
 </script>
