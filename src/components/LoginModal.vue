@@ -7,6 +7,12 @@
                 <h1 class="text-xl text-center">
                     Login
                 </h1>
+                <section class="my-5 text-center">
+                    <button class="text-center border rounded px-2" @click="loginWithGoogle()">
+                        Login With Google
+                    </button>
+                </section>
+                <p class="my-3 text-center">Or</p>
                 <form class="p-2 my-2" @submit.prevent="submit">
                     <div class="my-4">
                         <label for="">Email or Username</label>
@@ -57,6 +63,14 @@ export default {
         },
         close() {
             this.$emit('close-login')
+        },
+        loginWithGoogle() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then(() => {
+                this.close();
+            }).catch(function () {
+
+            });
         }
     },
     mounted() {
