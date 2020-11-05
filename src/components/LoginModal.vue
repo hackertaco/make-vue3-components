@@ -10,7 +10,7 @@
                 <form class="p-2 my-2" @submit.prevent="submit">
                     <div class="my-4">
                         <label for="">Email or Username</label>
-                        <input type="text" class="rounded shadow p-2 w-full" v-model="email" placeholder="Enter your Email or Username">
+                        <input type="text" class="rounded shadow p-2 w-full" v-model="email" placeholder="Enter your Email or Username" ref="newIdRef">
                     </div>
                     <div class="my-4">
                         <label for="">Password</label>
@@ -58,6 +58,9 @@ export default {
         close() {
             this.$emit('close-login')
         }
+    },
+    mounted() {
+        this.$refs.newIdRef.focus()
     }
 
 }

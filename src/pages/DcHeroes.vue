@@ -9,7 +9,7 @@
         </li>
     </ul>
     <form class="mt-10" @submit.prevent="addHero">
-        <input class="border rounded" v-model.number=" newHero" placeholder="type your hero" />
+        <input class="border rounded" v-model.number=" newHero" placeholder="type your hero" ref="newHeroRef" />
         <button class="border rounded bg-gradient-to-t from-red-700 to-pink-500 text-sm text-white" type="submit">Add Hero</button>
     </form>
 </div>
@@ -31,6 +31,9 @@ export default {
                 },
             ]
         }
+    },
+    mounted() {
+        this.$refs.newHeroRef.focus()
     },
     methods: {
         addHero() {
