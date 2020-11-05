@@ -10,7 +10,10 @@
 import firebase from '../utilities/firebase'
 export default {
     props: {
-        'isLoggedIn': Boolean
+        'isLoggedIn': {
+            type: Boolean,
+            required: false
+        }
     },
     //오류를 사전에 방지할 수 있음.
     data() {
