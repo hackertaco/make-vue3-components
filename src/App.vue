@@ -9,15 +9,31 @@
 <script>
 import AppHeader from './components/AppHeader';
 import LoginModal from './components/LoginModal'
+import firebase from './utilities/firebase'
 
 export default {
     components: {
         AppHeader,
         LoginModal
     },
+    mounted() {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log(user);
+                this.isLoggedIn = true;
+                this.authUser = user
+            } else {
+                console.log('no user')
+                this.isLoggedIn = false;
+                this.authUser = {}
+            }
+        })
+    },
     data() {
         return {
             isLoginOpen: false,
+            isLoggedIn: false,
+            authUser: {}
         }
     }
 
