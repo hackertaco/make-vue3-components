@@ -12,33 +12,46 @@
 
 <script>
 import marked from 'marked'
-import debounce from '../utilities/mixins/debounce'
+// import debounce from '../utilities/mixins/debounce'
+import {
+    computed,
+    onMounted,
+    ref
+} from 'vue';
 
 export default {
-    mixins: [debounce],
-    data() {
+
+    setup() {
+
+        const timeout = ref('')
+        const text = ref('');
+        const newMarkdownRef = ref('');
+        onMounted(() => {
+            newMarkdownRef.value.focus()
+        });
+        const markedText = computed({
+            get: () =>
+                marked(text.value)
+
+        })
+
+        function update(e) {
+            const task = () => (text.value = e.target.value)
+            debounce(task, 500)
+        }
+
+        function debounce(func, wait) {
+            clearTimeout(timeout.value)
+            timeout.value = setTimeout(func, wait)
+        }
         return {
-            text: '',
-
+            text,
+            update,
+            markedText,
+            newMarkdownRef,
         }
     },
-    mounted() {
-        this.$refs.newMarkdownRef.focus()
-    },
-    computed: {
-        markedText() {
-            return marked(this.text)
-        }
-    },
-    methods: {
-        update(e) {
-            const task = () =>
-                (this.text = e.target.value)
-            this.debounce(task, 500)
 
-        },
-
-    }
 }
 </script>
 

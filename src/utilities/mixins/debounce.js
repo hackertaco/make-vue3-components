@@ -1,14 +1,11 @@
-export default {
-    data(){
-        return {
-            timeout: ''
-        }
-    },
-    methods:{
-        debounce(func, wait) {
+import {reactive, ref} from 'vue'
+export default function() {
 
-            clearTimeout(this.timeout)
-            this.timeout = setTimeout(func, wait)
-        }
+    const timeout = reactive(ref(''));
+    function debounce(func, wait){
+        clearTimeout(timeout.value)
+        timeout.value = setTimeout(func, wait) 
     }
+    
+    return {debounce}
 }
