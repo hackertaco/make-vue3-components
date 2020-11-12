@@ -43,7 +43,7 @@ export default {
         function addHero() {
             if (newHero.value !== "") {
                 dcHeroes.value.push({
-                    name: newHero
+                    name: newHero.value
                 });
                 newHero.value = ''
             }
