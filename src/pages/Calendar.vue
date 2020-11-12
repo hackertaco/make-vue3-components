@@ -21,57 +21,75 @@
 </template>
 
 <script>
+import {
+    computed,
+    ref
+} from 'vue'
 export default {
-    data() {
-        return {
-            currentDate: new Date().getUTCDate(),
-            currentMonth: new Date().getMonth(),
-            currentYear: new Date().getFullYear(),
-            days: ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat']
-        }
-    },
-    methods: {
-        daysInMonth() {
-            return new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+    setup() {
+        let currentDate = ref(new Date().getUTCDate())
+        let currentMonth = ref(new Date().getMonth())
+        let currentYear = ref(new Date().getFullYear())
+        const days = ref(['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat'])
+
+        function daysInMonth() {
+            return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
             //달의 전체 일수를 구한다.
-        },
-        startDay() {
-            return new Date(this.currentYear, this.currentMonth).getDay()
-        },
-        next() {
-            if (this.currentMonth === 11) {
-                this.currentMonth = 0;
-                this.currentYear++
+        }
+
+        function startDay() {
+            return new Date(currentYear.value, currentMonth.value).getDay()
+        }
+
+        function next() {
+            if (currentMonth.value === 11) {
+                currentMonth.value = 0;
+                currentYear.value++
             } else {
-                this.currentMonth++
+                currentMonth.value++
 
             }
-        },
-        prev() {
-            if (this.currentMonth === 0) {
-                this.currentMonth = 11;
-                this.currentYear--;
+        }
+
+        function prev() {
+            if (currentMonth.value === 0) {
+                currentMonth.value = 11;
+                currentYear.value--;
             } else {
-                this.currentMonth--
+                currentMonth.value--
 
             }
-        },
-        currentDateClass(num) {
+        }
 
-            const calendarFullDate = new Date(this.currentYear, this.currentMonth, num).toDateString()
+        function currentDateClass(num) {
+
+            const calendarFullDate = new Date(currentYear.value, currentMonth.value, num).toDateString()
             const currentFullDate = new Date().toDateString();
             //toDateString을 쓰는 이유는, new date를 했을 때 수반되는 시간 때문이다.
             return currentFullDate === calendarFullDate ? 'text-yellow-600' : ''
         }
-    },
-    computed: {
-        currentMonthName() {
-            return new Date(this.currentYear, this.currentMonth).toLocaleString("default", {
-                month: 'long'
-            })
-            // 숫자로 표현되는 달을 글자로 바꾸는
+
+        const currentMonthName = computed({
+            get: () =>
+                new Date(currentYear.value, currentMonth.value).toLocaleString("default", {
+                    month: 'long'
+                })
+
+        })
+        return {
+            days,
+            currentDate,
+            currentMonth,
+            currentYear,
+            daysInMonth,
+            startDay,
+            next,
+            prev,
+            currentDateClass,
+            currentMonthName
         }
     }
+
 }
 </script>
 
