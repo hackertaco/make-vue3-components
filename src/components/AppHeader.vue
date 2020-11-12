@@ -39,6 +39,10 @@ export default {
                 {
                     title: 'Slider Carousel',
                     to: '/slider'
+                },
+                {
+                    title: 'Calculator',
+                    to: '/calculator'
                 }
             ]
         }
