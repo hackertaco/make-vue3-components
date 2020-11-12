@@ -16,44 +16,55 @@
 </template>
 
 <script>
+import {
+    computed,
+    onMounted,
+    ref
+} from 'vue'
 export default {
-    data() {
-        return {
-            newHero: "",
-            dcHeroes: [{
-                    name: 'ironman'
-                },
-                {
-                    name: 'catwoman'
-                },
-                {
-                    name: 'american'
-                },
-            ]
-        }
-    },
-    mounted() {
-        this.$refs.newHeroRef.focus()
-    },
-    methods: {
-        addHero() {
-            if (this.newHero !== "") {
-                this.dcHeroes.push({
-                    name: this.newHero
-                });
-                this.newHero = ''
-            }
-        },
-        removeHero(index) {
-            this.dcHeroes = this.dcHeroes.filter((hero, i) => i !== index)
-        }
-    },
-    computed: {
-        countHero() {
-            return this.dcHeroes.length
-        },
+    setup() {
+        const newHeroRef = ref('')
+        const newHero = ref('')
+        let dcHeroes = ref([{
+                name: 'ironman'
+            },
+            {
+                name: 'catwoman'
+            },
+            {
+                name: 'american'
+            },
+        ])
 
-    }
+        function removeHero(index) {
+            dcHeroes.value = dcHeroes.value.filter((hero, i) => i !== index)
+        }
+
+        function addHero() {
+            if (newHero.value !== "") {
+                dcHeroes.value.push({
+                    name: newHero
+                });
+                newHero.value = ''
+            }
+        }
+        onMounted(() => {
+            newHeroRef.value.focus()
+        })
+
+        const countHero = computed({
+            get: () => dcHeroes.value.length
+        })
+        return {
+            dcHeroes,
+            newHero,
+            removeHero,
+            addHero,
+            newHeroRef,
+            countHero
+        }
+    },
+
 }
 </script>
 
