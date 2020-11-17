@@ -36,7 +36,9 @@
       <p class="w-10 leading-10" v-for="num in startDay()" :key="num"></p>
       <!--startDay가 있는 이유: 1일의 요일 인덱스를 줘서 그걸 가지고 1일 위치를 조정하기 위하여, 숫자를 구했으니 그 자리만큼 비워두면 된다.-->
       <p
-        :class="currentDateClass(num) || showMeeting(num)"
+        :class="
+          currentDateClass(num) || showMeeting(num) || underlineToday(num)
+        "
         class="w-10 leading-10 cursor-pointer"
         v-for="num in daysInMonth()"
         :key="num"
@@ -139,6 +141,7 @@ export default {
       } else if (meetingDay === 0) {
         todos.value[num - 1] = localStorage.getItem("일요일");
       }
+      underlineToday(num);
     }
 
     function showMeeting(num) {
@@ -155,6 +158,9 @@ export default {
 
         return "text-white bg-red-400 rounded-full";
       }
+    }
+    function underlineToday(num) {
+      return today.value === num ? "border-b" : "";
     }
 
     const currentMonthName = computed({
@@ -199,6 +205,7 @@ export default {
       today,
       showMeeting,
       todos,
+      underlineToday,
     };
   },
 };
