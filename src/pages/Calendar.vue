@@ -11,6 +11,22 @@
         {{ currentYear }}
       </h2>
     </section>
+    <section class="flex justify-between my-4">
+      <button
+        class="px-2 hover:animate-bounce"
+        style="outline: none"
+        @click="prev()"
+      >
+        👈
+      </button>
+      <button
+        class="px-2 hover:animate-bounce"
+        style="outline: none"
+        @click="next()"
+      >
+        👉
+      </button>
+    </section>
     <section class="grid-cols-7 grid gap-x-8 gap-y-2 text-center">
       <p class="w-10 leading-10" v-for="day in days" :key="day">
         {{ day }}
@@ -29,17 +45,25 @@
         {{ num }}
       </p>
     </section>
-    <section class="flex justify-between my-4">
-      <button class="px-2 border rounded" @click="prev()">Prev</button>
-      <button class="px-2 border rounded" @click="next()">Next</button>
-    </section>
-    <section class="w-full h-full" style="font-family: 'Jua', sans-serif">
-      <div class="border rounded-2xl" style="padding: 1rem">
+
+    <section class="w-full h-48 mt-8" style="font-family: 'Jua', sans-serif">
+      <div
+        class="border rounded-2xl max-h-full"
+        style="padding: 1rem; overflow-y: scroll"
+      >
         <div
           class="border-b-2 border-gray-300 w-full m-auto p-2 flex justify-between"
         >
           <div>{{ today }}일</div>
           <button>+</button>
+        </div>
+        <div
+          class="p-2"
+          v-show="today === index + 1 && todo.length >= 1"
+          v-for="(todo, index) in todos"
+          :key="index"
+        >
+          {{ todo }}
         </div>
       </div>
     </section>
@@ -47,7 +71,7 @@
 </template>
 
 <script>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 export default {
   setup() {
     let currentDate = ref(new Date().getUTCDate());
@@ -55,6 +79,7 @@ export default {
     let currentYear = ref(new Date().getFullYear());
     let today = ref(new Date().getDate());
     const days = ref(["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"]);
+    const todos = ref([]);
 
     function daysInMonth() {
       return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
@@ -69,8 +94,10 @@ export default {
       if (currentMonth.value === 11) {
         currentMonth.value = 0;
         currentYear.value++;
+        pushObject();
       } else {
         currentMonth.value++;
+        pushObject();
       }
     }
 
@@ -78,8 +105,10 @@ export default {
       if (currentMonth.value === 0) {
         currentMonth.value = 11;
         currentYear.value--;
+        pushObject();
       } else {
         currentMonth.value--;
+        pushObject();
       }
     }
 
@@ -97,19 +126,35 @@ export default {
     }
 
     function showNum(num) {
-      this.today = num;
-    }
+      today.value = num;
 
-    function showMeeting(num) {
-      //일단 요일 인덱스가 2인 date를 구해야한다.
       const meetingDay = new Date(
         currentYear.value,
         currentMonth.value,
         num
       ).getDay();
-      return meetingDay === 2 || meetingDay === 0
-        ? "text-white bg-red-400 rounded-full"
-        : "";
+
+      if (meetingDay === 2) {
+        todos.value[num - 1] = localStorage.getItem("화요일");
+      } else if (meetingDay === 0) {
+        todos.value[num - 1] = localStorage.getItem("일요일");
+      }
+    }
+
+    function showMeeting(num) {
+      const meetingDay = new Date(
+        currentYear.value,
+        currentMonth.value,
+        num
+      ).getDay();
+
+      if (meetingDay === 2 || meetingDay === 0) {
+        //만약 화요일이나 일요일이라면, 로컬스토리지에서 일정을 가져온다.
+        // const fixedMeeting = localStorage.getItem("화요일");
+        //처음으로 화요일인 date를 찾고, 해당 인덱스에 로컬스토리지 내용을 넣는다.
+
+        return "text-white bg-red-400 rounded-full";
+      }
     }
 
     const currentMonthName = computed({
@@ -120,6 +165,24 @@ export default {
             month: "long",
           }
         ),
+    });
+    function pushObject() {
+      todos.value = [];
+      for (
+        let i = 0;
+        i < new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+        i++
+      ) {
+        todos.value.push({});
+      }
+    }
+
+    onMounted(() => {
+      //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
+      localStorage.setItem("화요일", "기획회의");
+      localStorage.setItem("일요일", "모각코");
+      pushObject();
+      //매주 화요일에 회의 일정 잡아넣기
     });
     return {
       days,
@@ -135,6 +198,7 @@ export default {
       showNum,
       today,
       showMeeting,
+      todos,
     };
   },
 };
