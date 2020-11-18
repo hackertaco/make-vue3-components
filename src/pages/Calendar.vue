@@ -76,7 +76,7 @@
           type="text"
           placeholder="일정을 입력하세요"
           class="border-b border-gray-600 mb-2 ml-1"
-          v-model="selected"
+          v-model="selectedName"
         />
         <div class="flex items-center h-10 cursor-pointer mb-2">
           <div @click="isOpen = !isOpen" class="mr-2">시작시간</div>
@@ -120,43 +120,65 @@
           </div>
           <div
             v-show="isOpen"
-            @close-dropdown="isOpen = false"
-            class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 mt-16"
+            class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 ml-16 mt-24 absolute"
           >
             <div
               class="hover:bg-indigo-500 hover:text-white ml-1"
               v-for="hour in 24"
               :key="hour"
+              @click="selectTime(hour)"
             >
-              {{ hour - 1 }}
+              {{ hour }}
             </div>
           </div>
+          <div class="text-black" v-show="selectedHour">
+            {{ selectedHour }}
+          </div>
         </div>
+
         <div class="mb-2">
           <div class="mb-4">반복</div>
           <div class="flex justify-between border-l">
             <div
-              class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200"
+              class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200 mb-2 cursor-pointer"
               v-for="r in repeat"
               :key="r"
+              @click="selectRepeat(r)"
+              :class="selectedRepeat === r ? 'bg-gray-200' : ''"
             >
               {{ r }}
             </div>
           </div>
+          <!--<div>
+              <div v-if="(selectedRepeat = '매일')">dd</div>
+              <div v-else-if="(selectedRepeat = '매주')">ss</div>
+              <div v-else-if="(selectedRepeat = '매달')">dd</div>
+              <div v-else-if="(selectedRepeat = '매년')">ff</div>
+            </div>-->
         </div>
+
         <div class="mb-2">
-          <div class="mb-2">색깔</div>
+          <div class="mb-2 grid grid-flow-col">
+            <div>색깔</div>
+            <div
+              v-show="selectedColor"
+              class="w-5 h-5 rounded-full border absolute ml-8"
+              :class="selectedColor"
+            ></div>
+          </div>
           <div
             class="flex justify-between rounded-md bg-white py-2 px-2 overflow-x-auto"
           >
             <div
-              class="rounded-full h-5 w-5 border cursor-pointer"
+              class="rounded-full h-5 w-5 border cursor-pointer hover:border-gray-500 hover:border-2"
               v-for="(c, index) in colors"
               :class="c"
               :key="index"
+              @click="selectColor(c)"
             ></div>
           </div>
         </div>
+
         <div>
           <div class="mb-2">태그</div>
           <div class="flex justify-center py-1 px-1">
@@ -189,8 +211,8 @@ export default {
     const todos = ref([]);
     const isModalOpen = ref(false);
     const isOpen = ref(false);
-    const repeat = ref(["없음", "매일", "매주", "매월", "매년"]);
-    const colors = ref([
+    const repeat = ["없음", "매일", "매주", "매월", "매년"];
+    const colors = [
       "bg-gray-600",
       "bg-red-600",
       "bg-orange-600",
@@ -201,13 +223,28 @@ export default {
       "bg-indigo-600",
       "bg-purple-600",
       "bg-pink-600",
-    ]);
+    ];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
     const selectedName = ref("");
-    const selectedTime = ref("");
-    const selectedRepeat = ref("");
-    const selectedColor = ref("");
+    const selectedHour = ref("미정");
+    const selectedRepeat = ref("없음");
+    const selectedColor = ref("bg-gray-600");
     const selectedTag = ref("");
+
+    function selectTime(hour) {
+      selectedHour.value = "미정";
+      selectedHour.value = hour;
+      isOpen.value = false;
+    }
+    function selectRepeat(r) {
+      selectedRepeat.value = "없음";
+      selectedRepeat.value = r;
+    }
+
+    function selectColor(c) {
+      selectedColor.value = "bg-gray-600";
+      selectedColor.value = c;
+    }
     function daysInMonth() {
       return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
       //달의 전체 일수를 구한다.
@@ -337,10 +374,13 @@ export default {
       colors,
       tag,
       selectedName,
-      selectedTime,
+      selectTime,
       selectedRepeat,
       selectedColor,
       selectedTag,
+      selectedHour,
+      selectRepeat,
+      selectColor,
     };
   },
 };
