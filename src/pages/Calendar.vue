@@ -75,11 +75,12 @@
         <input
           type="text"
           placeholder="일정을 입력하세요"
-          class="border-b border-gray-600"
+          class="border-b border-gray-600 mb-2 ml-1"
+          v-model="selected"
         />
-        <div class="flex items-center h-10 cursor-pointer">
+        <div class="flex items-center h-10 cursor-pointer mb-2">
           <div @click="isOpen = !isOpen" class="mr-2">시작시간</div>
-          <div @click="isOpen = !isOpen" class="">
+          <div @click="isOpen = !isOpen">
             <svg
               v-if="isOpen"
               xmlns="http://www.w3.org/2000/svg"
@@ -119,6 +120,7 @@
           </div>
           <div
             v-show="isOpen"
+            @close-dropdown="isOpen = false"
             class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 mt-16"
           >
             <div
@@ -130,9 +132,43 @@
             </div>
           </div>
         </div>
-        <div>반복</div>
-        <div>색깔</div>
-        <div>태그</div>
+        <div class="mb-2">
+          <div class="mb-4">반복</div>
+          <div class="flex justify-between border-l">
+            <div
+              class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200"
+              v-for="r in repeat"
+              :key="r"
+            >
+              {{ r }}
+            </div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <div class="mb-2">색깔</div>
+          <div
+            class="flex justify-between rounded-md bg-white py-2 px-2 overflow-x-auto"
+          >
+            <div
+              class="rounded-full h-5 w-5 border cursor-pointer"
+              v-for="(c, index) in colors"
+              :class="c"
+              :key="index"
+            ></div>
+          </div>
+        </div>
+        <div>
+          <div class="mb-2">태그</div>
+          <div class="flex justify-center py-1 px-1">
+            <div
+              class="w-20 mr-4 text-center rounded-xl border-gray-200 bg-yellow-500 shadow-xl"
+              v-for="t in tag"
+              :key="t"
+            >
+              {{ t }}
+            </div>
+          </div>
+        </div>
       </template>
       <template #button><button>추가</button></template>
     </Modal>
@@ -153,6 +189,25 @@ export default {
     const todos = ref([]);
     const isModalOpen = ref(false);
     const isOpen = ref(false);
+    const repeat = ref(["없음", "매일", "매주", "매월", "매년"]);
+    const colors = ref([
+      "bg-gray-600",
+      "bg-red-600",
+      "bg-orange-600",
+      "bg-yellow-600",
+      "bg-green-600",
+      "bg-teal-600",
+      "bg-blue-600",
+      "bg-indigo-600",
+      "bg-purple-600",
+      "bg-pink-600",
+    ]);
+    const tag = ref(["회의", "생일", "이벤트", "기타"]);
+    const selectedName = ref("");
+    const selectedTime = ref("");
+    const selectedRepeat = ref("");
+    const selectedColor = ref("");
+    const selectedTag = ref("");
     function daysInMonth() {
       return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
       //달의 전체 일수를 구한다.
@@ -278,6 +333,14 @@ export default {
       underlineToday,
       isModalOpen,
       isOpen,
+      repeat,
+      colors,
+      tag,
+      selectedName,
+      selectedTime,
+      selectedRepeat,
+      selectedColor,
+      selectedTag,
     };
   },
 };
