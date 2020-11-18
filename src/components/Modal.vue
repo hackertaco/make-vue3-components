@@ -5,15 +5,20 @@
   ></section>
   <div class="absolute inset-0">
     <div class="flex h-full">
-      <div class="z-30 m-auto bg-white p-2 rounded-xl shadow w-1/3">
-        <div class="p-2 border">
-          <h1 class="text-xl">
+      <div
+        class="z-30 m-auto bg-white p-2 rounded-xl shadow w-1/3"
+        @click="closeDropdown"
+      >
+        <div class="p-2 border" @click="closeDropdown">
+          <h1 class="text-xl mt-2 mb-2 p-1">
             <slot name="title"></slot>
           </h1>
-          <main class="w-full h-full">
+          <main class="w-full h-full p-1" @click="closeDropdown">
             <slot name="body"></slot>
           </main>
-          <footer class="w-full">
+          <footer
+            class="w-full text-center mt-4 mb-2 p-2 border rounded shadow-xl hover:border-gray-600"
+          >
             <slot name="button"></slot>
           </footer>
         </div>
@@ -28,7 +33,10 @@ export default {
     function close() {
       emit("close");
     }
-    return { close };
+    function closeDropdown() {
+      emit("close-dropdown");
+    }
+    return { close, closeDropdown };
   },
 };
 </script>
