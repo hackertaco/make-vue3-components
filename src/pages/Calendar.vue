@@ -57,7 +57,7 @@
           class="border-b-2 border-gray-300 w-full m-auto p-2 flex justify-between"
         >
           <div>{{ today }}일</div>
-          <button>+</button>
+          <button @click="isModalOpen = true">+</button>
         </div>
         <div
           class="p-2"
@@ -69,12 +69,81 @@
         </div>
       </div>
     </section>
+    <Modal v-if="isModalOpen" @close="isModalOpen = false">
+      <template #title>일정</template>
+      <template #body @click="isOpen = false">
+        <input
+          type="text"
+          placeholder="일정을 입력하세요"
+          class="border-b border-gray-600"
+        />
+        <div class="flex items-center h-10 cursor-pointer">
+          <div @click="isOpen = !isOpen" class="mr-2">시작시간</div>
+          <div @click="isOpen = !isOpen" class="">
+            <svg
+              v-if="isOpen"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-triangle fill-current text-black mr-2"
+            >
+              <path
+                xmlns="http://www.w3.org/2000/svg"
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+            </svg>
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-triangle transform rotate-180 fill-current text-black mr-2"
+            >
+              <path
+                xmlns="http://www.w3.org/2000/svg"
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+            </svg>
+          </div>
+          <div
+            v-show="isOpen"
+            class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 mt-16"
+          >
+            <div
+              class="hover:bg-indigo-500 hover:text-white ml-1"
+              v-for="hour in 24"
+              :key="hour"
+            >
+              {{ hour - 1 }}
+            </div>
+          </div>
+        </div>
+        <div>반복</div>
+        <div>색깔</div>
+        <div>태그</div>
+      </template>
+      <template #button><button>추가</button></template>
+    </Modal>
   </div>
 </template>
 
 <script>
 import { computed, ref, onMounted } from "vue";
+import Modal from "../components/Modal";
 export default {
+  components: { Modal },
   setup() {
     let currentDate = ref(new Date().getUTCDate());
     let currentMonth = ref(new Date().getMonth());
@@ -82,7 +151,8 @@ export default {
     let today = ref(new Date().getDate());
     const days = ref(["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"]);
     const todos = ref([]);
-
+    const isModalOpen = ref(false);
+    const isOpen = ref(false);
     function daysInMonth() {
       return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
       //달의 전체 일수를 구한다.
@@ -206,6 +276,8 @@ export default {
       showMeeting,
       todos,
       underlineToday,
+      isModalOpen,
+      isOpen,
     };
   },
 };
