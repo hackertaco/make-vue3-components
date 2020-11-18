@@ -60,12 +60,37 @@
           <button @click="isModalOpen = true">+</button>
         </div>
         <div
-          class="p-2"
-          v-show="today === index + 1 && todo.length >= 1"
+          class="p-2 text-black"
           v-for="(todo, index) in todos"
+          v-show="today === index + 1 && todo.length >= 1"
           :key="index"
         >
-          {{ todo }}
+          <div
+            v-for="t in todo"
+            :key="t"
+            class="flex justify-between align-middle items-center mt-3 border-b pb-3"
+          >
+            <div class="flex items-center">
+              <div
+                :class="t.color"
+                class="w-5 h-5 rounded-full mr-3 leading-5"
+              ></div>
+              <div class="mr-3 text-2xl h-6 leading-6">
+                {{ t.name }}
+              </div>
+              <div
+                class="w-10 text-xl"
+                v-text="t.time === '미정' ? '' : t.time + '시'"
+              ></div>
+            </div>
+            <div class="flex h-6 leading-6">
+              <div class="w-20 mr-3 text-center bg-yellow-400 rounded-xl">
+                {{ t.tag }}
+              </div>
+              <button class="mr-3">수정</button>
+              <button>삭제</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -159,7 +184,7 @@
 
         <div class="mb-2">
           <div class="mb-2 grid grid-flow-col">
-            <div>색깔</div>
+            <div class="h-5 leading-5">색깔</div>
             <div
               v-show="selectedColor"
               class="w-5 h-5 rounded-full border absolute ml-8"
@@ -181,18 +206,27 @@
 
         <div>
           <div class="mb-2">태그</div>
-          <div class="flex justify-center py-1 px-1">
+          <div class="flex justify-around py-1 px-1 ml-2">
             <div
-              class="w-20 mr-4 text-center rounded-xl border-gray-200 bg-yellow-500 shadow-xl"
+              class="w-20 mr-4 text-center rounded-xl border-gray-200 shadow-xl cursor-pointer hover:bg-red-500"
               v-for="t in tag"
               :key="t"
+              @click="selectTag(t)"
+              :class="selectedTag === t ? 'bg-red-400' : 'bg-yellow-400'"
             >
               {{ t }}
             </div>
           </div>
         </div>
       </template>
-      <template #button><button>추가</button></template>
+      <template #button
+        ><button
+          class="w-full text-center mt-4 mb-2 p-2 border rounded shadow-xl hover:border-gray-600"
+          @click="addPlan(today)"
+        >
+          추가
+        </button></template
+      >
     </Modal>
   </div>
 </template>
@@ -213,16 +247,16 @@ export default {
     const isOpen = ref(false);
     const repeat = ["없음", "매일", "매주", "매월", "매년"];
     const colors = [
-      "bg-gray-600",
-      "bg-red-600",
-      "bg-orange-600",
-      "bg-yellow-600",
-      "bg-green-600",
-      "bg-teal-600",
-      "bg-blue-600",
-      "bg-indigo-600",
-      "bg-purple-600",
-      "bg-pink-600",
+      "bg-gray-400",
+      "bg-red-400",
+      "bg-orange-400",
+      "bg-yellow-400",
+      "bg-green-400",
+      "bg-teal-400",
+      "bg-blue-400",
+      "bg-indigo-400",
+      "bg-purple-400",
+      "bg-pink-400",
     ];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
     const selectedName = ref("");
@@ -230,6 +264,19 @@ export default {
     const selectedRepeat = ref("없음");
     const selectedColor = ref("bg-gray-600");
     const selectedTag = ref("");
+
+    function addPlan(today) {
+      const obj = {
+        name: selectedName.value,
+        time: selectedHour.value,
+        repeat: selectedRepeat.value,
+        color: selectedColor.value,
+        tag: selectedTag.value,
+      };
+      isModalOpen.value = false;
+      localStorage.setItem(today, JSON.stringify(obj));
+      todos.value[today - 1].push(obj);
+    }
 
     function selectTime(hour) {
       selectedHour.value = "미정";
@@ -244,6 +291,11 @@ export default {
     function selectColor(c) {
       selectedColor.value = "bg-gray-600";
       selectedColor.value = c;
+    }
+
+    function selectTag(t) {
+      selectedTag.value = "";
+      selectedTag.value = t;
     }
     function daysInMonth() {
       return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
@@ -303,6 +355,7 @@ export default {
       } else if (meetingDay === 0) {
         todos.value[num - 1] = localStorage.getItem("일요일");
       }
+
       underlineToday(num);
     }
 
@@ -341,15 +394,20 @@ export default {
         i < new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
         i++
       ) {
-        todos.value.push({});
+        todos.value.push([]);
       }
     }
-
+    function getPlan() {
+      todos.value[today.value - 1].push(
+        JSON.parse(localStorage.getItem(today.value))
+      );
+    }
     onMounted(() => {
       //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
       localStorage.setItem("화요일", "기획회의");
       localStorage.setItem("일요일", "모각코");
       pushObject();
+      getPlan();
       //매주 화요일에 회의 일정 잡아넣기
     });
     return {
@@ -381,6 +439,8 @@ export default {
       selectedHour,
       selectRepeat,
       selectColor,
+      selectTag,
+      addPlan,
     };
   },
 };
