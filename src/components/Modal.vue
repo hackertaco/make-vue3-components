@@ -5,14 +5,17 @@
   ></section>
   <div class="absolute inset-0">
     <div class="flex h-full">
-      <div class="z-30 m-auto bg-white p-2 rounded shadow w-1/3">
+      <div class="z-30 m-auto bg-white p-2 rounded-xl shadow w-1/3">
         <div class="p-2 border">
-          <h1 class="text-2xl">
+          <h1 class="text-xl">
             <slot name="title"></slot>
           </h1>
-          <main>
+          <main class="w-full h-full">
             <slot name="body"></slot>
           </main>
+          <footer class="w-full">
+            <slot name="button"></slot>
+          </footer>
         </div>
       </div>
     </div>
