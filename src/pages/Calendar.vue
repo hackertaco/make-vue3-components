@@ -272,10 +272,13 @@ export default {
         repeat: selectedRepeat.value,
         color: selectedColor.value,
         tag: selectedTag.value,
+        id: currentYear.value + currentMonth.value + today + "_" + Date.now(),
       };
       isModalOpen.value = false;
-      localStorage.setItem(today, JSON.stringify(obj));
+
+      localStorage.setItem(obj.id, JSON.stringify(obj));
       todos.value[today - 1].push(obj);
+      selectedTag.value = "";
     }
 
     function selectTime(hour) {
@@ -349,11 +352,11 @@ export default {
         currentMonth.value,
         num
       ).getDay();
-
+      getPlan();
       if (meetingDay === 2) {
-        todos.value[num - 1] = localStorage.getItem("화요일");
+        // todos.value[num - 1] = localStorage.getItem("화요일");
       } else if (meetingDay === 0) {
-        todos.value[num - 1] = localStorage.getItem("일요일");
+        // todos.value[num - 1] = localStorage.getItem("일요일");
       }
 
       underlineToday(num);
@@ -398,14 +401,28 @@ export default {
       }
     }
     function getPlan() {
-      todos.value[today.value - 1].push(
-        JSON.parse(localStorage.getItem(today.value))
-      );
+      const arr = [];
+      if (localStorage.length !== 0) {
+        for (let i = 0; i < localStorage.length; i++) {
+          if (
+            localStorage.key(i) !== "loglevel:webpack-dev-server" &&
+            localStorage.key(i) !== "csCursors" &&
+            localStorage.key(i) !== "csPointers"
+          ) {
+            arr.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
+            //setitem을 할 때, 아이디는 obj의 id로 한다. mkid
+          }
+        }
+        console.log(arr);
+        const mkId = currentYear.value + currentMonth.value + today.value;
+        const newArr = arr.filter((item) => item.id.includes(mkId.toString()));
+        todos.value[today.value - 1] = newArr;
+      }
     }
     onMounted(() => {
       //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
-      localStorage.setItem("화요일", "기획회의");
-      localStorage.setItem("일요일", "모각코");
+      //   localStorage.setItem("화요일", "기획회의");
+      //   localStorage.setItem("일요일", "모각코");
       pushObject();
       getPlan();
       //매주 화요일에 회의 일정 잡아넣기

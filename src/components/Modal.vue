@@ -5,20 +5,15 @@
   ></section>
   <div class="absolute inset-0">
     <div class="flex h-full">
-      <div
-        class="z-30 m-auto bg-white p-2 rounded-xl shadow w-1/3"
-        @click="closeDropdown"
-      >
-        <div class="p-2 border" @click="closeDropdown">
+      <div class="z-30 m-auto bg-white p-2 rounded-xl shadow w-1/3">
+        <div class="p-2 border">
           <h1 class="text-xl mt-2 mb-2 p-1">
             <slot name="title"></slot>
           </h1>
-          <main class="w-full h-full p-1" @click="closeDropdown">
+          <main class="w-full h-full p-1">
             <slot name="body"></slot>
           </main>
-          <footer
-            class="w-full text-center mt-4 mb-2 p-2 border rounded shadow-xl hover:border-gray-600"
-          >
+          <footer>
             <slot name="button"></slot>
           </footer>
         </div>
