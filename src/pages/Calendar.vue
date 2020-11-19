@@ -35,15 +35,25 @@
     <section class="grid-cols-7 grid gap-x-8 gap-y-2 text-center">
       <p class="w-10 leading-10" v-for="num in startDay()" :key="num"></p>
       <!--startDay가 있는 이유: 1일의 요일 인덱스를 줘서 그걸 가지고 1일 위치를 조정하기 위하여, 숫자를 구했으니 그 자리만큼 비워두면 된다.-->
-      <p
+      <div
         :class="currentDateClass(num) || underlineToday(num)"
-        class="w-10 leading-10 cursor-pointer"
+        class="w-10 h-10 leading-10 cursor-pointer relative flex justify-center"
         v-for="num in daysInMonth()"
         :key="num"
         @click="showNum(num)"
       >
-        {{ num }}
-      </p>
+        <div class="absolute" style="">
+          {{ num }}
+        </div>
+        <div class="flex flex-col ml-10 w-10 justify-start h-10" style="">
+          <div
+            class="w-2 h-2 rounded-full"
+            v-for="(calendarColor, index) in fetchColorToCalendar(num)"
+            :key="index"
+            :class="calendarColor"
+          ></div>
+        </div>
+      </div>
     </section>
 
     <section class="w-full h-48 mt-8" style="font-family: 'Jua', sans-serif">
@@ -267,8 +277,9 @@ export default {
     const selectedName = ref("");
     const selectedHour = ref("미정");
     const selectedRepeat = ref("없음");
-    const selectedColor = ref("bg-gray-600");
+    const selectedColor = ref("bg-gray-400");
     const selectedTag = ref("");
+    const calendarColors = ref([]);
 
     function addPlan(today) {
       const obj = {
@@ -288,12 +299,20 @@ export default {
       selectedName.value = "";
       localStorage.setItem(obj.id, JSON.stringify(obj));
       todos.value[today - 1].push(obj);
-      //   planColor(today, obj.color);
       selectedTag.value = "";
+      calendarColors.value[today - 1].push(obj.color);
       sortPlan(today);
     }
 
-    // function planColor(today, color) {}
+    function fetchColorToCalendar(num) {
+      if (calendarColors.value[num - 1]) {
+        if (calendarColors.value[num - 1].length > 3) {
+          return calendarColors.value[num - 1].slice(0, 3);
+        } else {
+          return calendarColors.value[num - 1];
+        }
+      }
+    }
 
     function selectTime(hour) {
       selectedHour.value = "미정";
@@ -446,6 +465,7 @@ export default {
         i++
       ) {
         todos.value.push([]);
+        calendarColors.value.push([]);
       }
     }
     function getPlan() {
@@ -463,6 +483,10 @@ export default {
         arr.forEach((a) => {
           todos.value[parseInt(a.id.slice(6, 8)) - 1].push(a);
         });
+        arr.forEach((a) => {
+          calendarColors.value[parseInt(a.id.slice(6, 8)) - 1].push(a.color);
+        });
+        sortPlan(today.value);
       }
     }
 
@@ -514,6 +538,8 @@ export default {
       addPlan,
       removePlan,
       //   planColor,
+      calendarColors,
+      fetchColorToCalendar,
     };
   },
 };
