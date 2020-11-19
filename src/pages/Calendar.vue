@@ -290,6 +290,7 @@ export default {
       todos.value[today - 1].push(obj);
       //   planColor(today, obj.color);
       selectedTag.value = "";
+      sortPlan(today);
     }
 
     // function planColor(today, color) {}
@@ -372,11 +373,43 @@ export default {
       //     // todos.value[num - 1] = localStorage.getItem("일요일");
       //   }
       underlineToday(num);
-      todos.value[num - 1].sort(function (a, b) {
-        parseInt(a.time) - parseInt(b.time);
+      sortPlan(num);
+    }
+    function sortPlan(num) {
+      todos.value[num - 1].sort(function (todo1, todo2) {
+        if (typeof todo1.time === "string" && typeof todo2.time === "number") {
+          return -1;
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "string"
+        ) {
+          return 1;
+        } else if (
+          typeof todo1.time === "string" &&
+          typeof todo2.time === "string"
+        ) {
+          return 0;
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "number" &&
+          todo1.time > todo2.time
+        ) {
+          return 1;
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "number" &&
+          todo1.time < todo2.time
+        ) {
+          return -1;
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "number" &&
+          todo1.time === todo2.time
+        ) {
+          return 0;
+        }
       });
     }
-
     function showMeeting(num) {
       const meetingDay = new Date(
         currentYear.value,
