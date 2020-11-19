@@ -36,9 +36,7 @@
       <p class="w-10 leading-10" v-for="num in startDay()" :key="num"></p>
       <!--startDay가 있는 이유: 1일의 요일 인덱스를 줘서 그걸 가지고 1일 위치를 조정하기 위하여, 숫자를 구했으니 그 자리만큼 비워두면 된다.-->
       <p
-        :class="
-          currentDateClass(num) || showMeeting(num) || underlineToday(num)
-        "
+        :class="currentDateClass(num) || underlineToday(num)"
         class="w-10 leading-10 cursor-pointer"
         v-for="num in daysInMonth()"
         :key="num"
@@ -94,7 +92,13 @@
         </div>
       </div>
     </section>
-    <Modal v-if="isModalOpen" @close="isModalOpen = false">
+    <Modal
+      v-if="isModalOpen"
+      @close="
+        isModalOpen = false;
+        selectedName = '';
+      "
+    >
       <template #title>일정</template>
       <template #body @click="isOpen = false">
         <input
@@ -246,6 +250,7 @@ export default {
     const isModalOpen = ref(false);
     const isOpen = ref(false);
     const repeat = ["없음", "매일", "매주", "매월", "매년"];
+
     const colors = [
       "bg-gray-400",
       "bg-red-400",
@@ -272,14 +277,22 @@ export default {
         repeat: selectedRepeat.value,
         color: selectedColor.value,
         tag: selectedTag.value,
-        id: currentYear.value + currentMonth.value + today + "_" + Date.now(),
-      };
+        id:
+          currentYear.value.toString() +
+          (currentMonth.value + 1).toString() +
+          today.toString() +
+          "_" +
+          Date.now(),
+      }; // dayjs format YYYY-MM-DD
       isModalOpen.value = false;
-
+      selectedName.value = "";
       localStorage.setItem(obj.id, JSON.stringify(obj));
       todos.value[today - 1].push(obj);
+      //   planColor(today, obj.color);
       selectedTag.value = "";
     }
+
+    // function planColor(today, color) {}
 
     function selectTime(hour) {
       selectedHour.value = "미정";
@@ -347,18 +360,17 @@ export default {
     function showNum(num) {
       today.value = num;
 
-      const meetingDay = new Date(
-        currentYear.value,
-        currentMonth.value,
-        num
-      ).getDay();
-      getPlan();
-      if (meetingDay === 2) {
-        // todos.value[num - 1] = localStorage.getItem("화요일");
-      } else if (meetingDay === 0) {
-        // todos.value[num - 1] = localStorage.getItem("일요일");
-      }
-
+      //   const meetingDay = new Date(
+      //     currentYear.value,
+      //     currentMonth.value,
+      //     num
+      //   ).getDay();
+      //   getPlan();
+      //   if (meetingDay === 2) {
+      //     // todos.value[num - 1] = localStorage.getItem("화요일");
+      //   } else if (meetingDay === 0) {
+      //     // todos.value[num - 1] = localStorage.getItem("일요일");
+      //   }
       underlineToday(num);
     }
 
@@ -412,9 +424,9 @@ export default {
             arr.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
           }
         }
-        const mkId = currentYear.value + currentMonth.value + today.value;
-        const newArr = arr.filter((item) => item.id.includes(mkId.toString()));
-        todos.value[today.value - 1] = newArr;
+        arr.forEach((a) => {
+          todos.value[parseInt(a.id.slice(6, 8)) - 1].push(a);
+        });
       }
     }
     function removePlan(id) {
@@ -422,6 +434,7 @@ export default {
       todos.value[today.value - 1].filter((t) => t.id !== id);
       getPlan();
     }
+
     onMounted(() => {
       //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
       //   localStorage.setItem("화요일", "기획회의");
@@ -462,6 +475,7 @@ export default {
       selectTag,
       addPlan,
       removePlan,
+      //   planColor,
     };
   },
 };
