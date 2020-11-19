@@ -372,6 +372,9 @@ export default {
       //     // todos.value[num - 1] = localStorage.getItem("일요일");
       //   }
       underlineToday(num);
+      todos.value[num - 1].sort(function (a, b) {
+        parseInt(a.time) - parseInt(b.time);
+      });
     }
 
     function showMeeting(num) {
@@ -429,10 +432,12 @@ export default {
         });
       }
     }
+
     function removePlan(id) {
       localStorage.removeItem(id);
-      todos.value[today.value - 1].filter((t) => t.id !== id);
-      getPlan();
+      todos.value[today.value - 1] = todos.value[today.value - 1].filter(
+        (t) => t.id !== id
+      );
     }
 
     onMounted(() => {
