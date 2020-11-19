@@ -88,7 +88,7 @@
                 {{ t.tag }}
               </div>
               <button class="mr-3">수정</button>
-              <button>삭제</button>
+              <button @click="removePlan(t.id)">삭제</button>
             </div>
           </div>
         </div>
@@ -410,14 +410,17 @@ export default {
             localStorage.key(i) !== "csPointers"
           ) {
             arr.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
-            //setitem을 할 때, 아이디는 obj의 id로 한다. mkid
           }
         }
-        console.log(arr);
         const mkId = currentYear.value + currentMonth.value + today.value;
         const newArr = arr.filter((item) => item.id.includes(mkId.toString()));
         todos.value[today.value - 1] = newArr;
       }
+    }
+    function removePlan(id) {
+      localStorage.removeItem(id);
+      todos.value[today.value - 1].filter((t) => t.id !== id);
+      getPlan();
     }
     onMounted(() => {
       //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
@@ -458,6 +461,7 @@ export default {
       selectColor,
       selectTag,
       addPlan,
+      removePlan,
     };
   },
 };
