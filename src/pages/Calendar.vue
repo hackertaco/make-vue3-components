@@ -169,8 +169,6 @@ export default {
         }
         return dateForId;
       };
-      // month();
-      // date();
       const obj = {
         name: selectedName.value,
         time: selectedHour.value,
@@ -237,12 +235,17 @@ export default {
       if (currentMonth.value === 11) {
         currentMonth.value = 0;
         currentYear.value++;
-        pushObject();
-        getPlan();
       } else {
         currentMonth.value++;
-        pushObject();
-        getPlan();
+      }
+      pushObject();
+      getPlan();
+      console.log(new Date().getMonth(), currentMonth.value);
+
+      if (new Date().getMonth() === currentMonth.value) {
+        today.value = new Date().getDate();
+      } else {
+        today.value = 1;
       }
     }
 
@@ -250,12 +253,16 @@ export default {
       if (currentMonth.value === 0) {
         currentMonth.value = 11;
         currentYear.value--;
-        pushObject();
-        getPlan();
       } else {
         currentMonth.value--;
-        pushObject();
-        getPlan();
+      }
+      pushObject();
+      getPlan();
+
+      if (new Date().getMonth() === currentMonth.value) {
+        today.value = new Date().getDate();
+      } else {
+        today.value = 1;
       }
     }
 
@@ -268,6 +275,10 @@ export default {
 
     function showNum(num) {
       today.value = num;
+      underlineToday(today.value);
+      sortPlan(today.value);
+
+      // today.value = num;
 
       //   const meetingDay = new Date(
       //     currentYear.value,
@@ -280,8 +291,8 @@ export default {
       //   } else if (meetingDay === 0) {
       //     // todos.value[num - 1] = localStorage.getItem("일요일");
       //   }
-      underlineToday(num);
-      sortPlan(num);
+      // underlineToday(today.value);
+      // sortPlan(today.value);
     }
     function sortPlan(num) {
       todos.value[num - 1].sort(function (todo1, todo2) {
