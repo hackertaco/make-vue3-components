@@ -61,6 +61,10 @@
       @close="
         isModalOpen = false;
         selectedName = '';
+        selectedColor = 'bg-gray-400';
+        selectedHour = '';
+        selectedRepeat = ['없음'];
+        selectedTag = '';
       "
     >
       <template #title>일정</template>
@@ -81,9 +85,7 @@
               {{ hour }}
             </div>
           </div>
-          <div class="text-black" v-show="selectedHour">
-            {{ selectedHour }}
-          </div>
+          <div class="text-black" v-show="selectedHour" @click="isOpen = !isOpen">{{ selectedHour }}</div>
         </div>
 
         <div class="mb-2">
@@ -191,13 +193,19 @@ export default {
         tag: selectedTag.value,
         id: currentYear.value.toString() + month() + date() + "_" + Date.now(),
       };
-
-      isModalOpen.value = false;
-      selectedName.value = "";
-      localStorage.setItem(obj.id, JSON.stringify(obj));
-      todos.value[today - 1].push(obj);
-      selectedTag.value = "";
-      sortPlan(today);
+      if (!obj.name) {
+        alert("이름은 필수입니다!");
+      } else {
+        isModalOpen.value = false;
+        localStorage.setItem(obj.id, JSON.stringify(obj));
+        todos.value[today - 1].push(obj);
+        selectedName.value = "";
+        selectedTag.value = "";
+        selectRepeat.value = ["없음"];
+        selectedHour.value = "미정";
+        selectedColor.value = "bg-gray-400";
+        sortPlan(today);
+      }
     }
 
     function fetchColorToCalendar(num) {
@@ -303,37 +311,18 @@ export default {
       today.value = num;
       underlineToday(today.value);
       sortPlan(today.value);
-
-      // today.value = num;
-
-      //   const meetingDay = new Date(
-      //     currentYear.value,
-      //     currentMonth.value,
-      //     num
-      //   ).getDay();
-      //   getPlan();
-      //   if (meetingDay === 2) {
-      //     // todos.value[num - 1] = localStorage.getItem("화요일");
-      //   } else if (meetingDay === 0) {
-      //     // todos.value[num - 1] = localStorage.getItem("일요일");
-      //   }
-      // underlineToday(today.value);
-      // sortPlan(today.value);
     }
+
     function sortPlan(num) {
       todos.value[num - 1].sort(function (todo1, todo2) {
         if (typeof todo1.time === "string" && typeof todo2.time === "number") {
-          return -1;
-        } else if (typeof todo1.time === "number" && typeof todo2.time === "string") {
           return 1;
-        } else if (typeof todo1.time === "string" && typeof todo2.time === "string") {
-          return 0;
+        } else if (typeof todo1.time === "number" && typeof todo2.time === "string") {
+          return -1;
         } else if (typeof todo1.time === "number" && typeof todo2.time === "number" && todo1.time > todo2.time) {
           return 1;
         } else if (typeof todo1.time === "number" && typeof todo2.time === "number" && todo1.time < todo2.time) {
           return -1;
-        } else if (typeof todo1.time === "number" && typeof todo2.time === "number" && todo1.time === todo2.time) {
-          return 0;
         }
       });
     }
