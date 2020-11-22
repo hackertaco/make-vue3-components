@@ -46,7 +46,7 @@
               <div class="w-10 text-xl" v-text="t.time === '미정' ? '' : t.time + '시'"></div>
             </div>
             <div class="flex h-6 leading-6">
-              <div class="w-20 mr-3 text-center bg-yellow-400 rounded-xl">
+              <div v-show="t.tag" class="w-20 mr-3 text-center bg-yellow-400 rounded-xl">
                 {{ t.tag }}
               </div>
               <button class="mr-3">수정</button>
@@ -89,16 +89,27 @@
         <div class="mb-2">
           <div class="mb-4">반복</div>
           <div class="flex justify-between border-l">
-            <div class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200 mb-2 cursor-pointer" v-for="r in repeat" :key="r" @click="selectRepeat(r)" :class="selectedRepeat === r ? 'bg-gray-200' : ''">
+            <div class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200 mb-2 cursor-pointer" v-for="r in repeat" :key="r" @click="selectRepeat(r, '', '')" :class="selectedRepeat[0] === r ? 'bg-gray-200' : ''">
               {{ r }}
             </div>
           </div>
-          <!--<div>
-              <div v-if="(selectedRepeat = '매일')">dd</div>
-              <div v-else-if="(selectedRepeat = '매주')">ss</div>
-              <div v-else-if="(selectedRepeat = '매달')">dd</div>
-              <div v-else-if="(selectedRepeat = '매년')">ff</div>
-            </div>-->
+          <div class="my-2 w-full">
+            <div v-show="selectedRepeat[0] === '매일'">
+              <span> <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedDate" @input="selectRepeat('매일', pickedDate, '')" /> 일마다 반복</span>
+            </div>
+            <div v-show="selectedRepeat[0] === '매주'" class="w-full">
+              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedWeek" @input="selectRepeat('매주', pickedWeek, pickedDay)" /> 주 요일마다 반복</div>
+              <div class="grid grid-cols-7 place-content-center divide-x text-center">
+                <div v-for="(d, index) in ['월', '화', '수', '목', '금', '토', '일']" :key="index" class="my-2 w-full cursor-pointer hover:bg-gray-200" @click="addDay(d, index)" :class="pickedDay.includes(d) ? 'bg-gray-200' : ''">
+                  {{ d }}
+                </div>
+              </div>
+            </div>
+            <div v-show="selectedRepeat[0] === '매월'">
+              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedMonth" @input="selectRepeat('매월', pickedMonth, '')" /> 개월마다 반복</div>
+            </div>
+            <div v-show="selectedRepeat[0] === '매년'"></div>
+          </div>
         </div>
 
         <div class="mb-2">
@@ -140,15 +151,18 @@ export default {
     const isModalOpen = ref(false);
     const isOpen = ref(false);
     const repeat = ["없음", "매일", "매주", "매월", "매년"];
+    const pickedDate = ref("1");
+    const pickedWeek = ref("1");
+    const pickedDay = ref([]);
+    const pickedMonth = ref("1");
 
     const colors = ["bg-gray-400", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-400", "bg-teal-400", "bg-blue-400", "bg-indigo-400", "bg-purple-400", "bg-pink-400"];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
     const selectedName = ref("");
     const selectedHour = ref("미정");
-    const selectedRepeat = ref("없음");
+    const selectedRepeat = ref(["없음"]);
     const selectedColor = ref("bg-gray-400");
     const selectedTag = ref("");
-    const calendarColors = ref([]);
     let monthForId = "";
     let dateForId = "";
 
@@ -177,38 +191,31 @@ export default {
         tag: selectedTag.value,
         id: currentYear.value.toString() + month() + date() + "_" + Date.now(),
       };
-      // currentMonth가 1의 자리일 경우와 10의 자리일 경우와 today가 1의 자리일 경우와 10의 자리일 경우를 주의
-      //만일 둘 다 1의 자리라면 -> 202011
-      //만일 달이 1의 자리고 일이 10의 자리라면 2020110
-      //만일 달이 10의 자리고 일이 1의 자리라면 2020111
-      //만일 달도 10 일도 10이면? 20201111
-      //그냥 다 여덟자리로 만들자!
+
       isModalOpen.value = false;
       selectedName.value = "";
       localStorage.setItem(obj.id, JSON.stringify(obj));
       todos.value[today - 1].push(obj);
       selectedTag.value = "";
-      // calendarColors.value[today - 1].push(obj.color);
       sortPlan(today);
     }
 
     function fetchColorToCalendar(num) {
-      // if (calendarColors.value[num - 1]) {
-      //   if (calendarColors.value[num - 1].length > 3) {
-      //     return calendarColors.value[num - 1].slice(0, 3);
-      //   } else {
-      //     return calendarColors.value[num - 1];
-      //   }
-      // }
       const arr = [];
       if (todos.value[num - 1]) {
         if (todos.value[num - 1].length > 3) {
-          todos.value[num - 1].forEach((t) => arr.push(t.color)).slice(0, 3);
+          todos.value[num - 1].forEach((t) => arr.push(t.color));
+          console.log(arr);
+          sortPlan(num);
+
+          return arr.slice(0, 3);
         } else {
           todos.value[num - 1].forEach((t) => arr.push(t.color));
+
+          sortPlan(num);
+          return arr;
         }
-        sortPlan(num);
-        return arr;
+        // return arr;
       }
     }
 
@@ -217,9 +224,20 @@ export default {
       selectedHour.value = hour;
       isOpen.value = false;
     }
-    function selectRepeat(r) {
-      selectedRepeat.value = "없음";
-      selectedRepeat.value = r;
+    function selectRepeat(r, num, day) {
+      selectedRepeat.value = ["없음"];
+      if (r !== "없음") {
+        selectedRepeat.value = [r, num, day];
+      }
+    }
+
+    function addDay(day) {
+      if (!pickedDay.value.includes(day)) {
+        pickedDay.value = [...pickedDay.value].concat(day);
+      } else if ([...pickedDay.value].includes(day)) {
+        pickedDay.value = pickedDay.value.filter((d) => d !== day);
+      }
+      selectRepeat("매주", pickedWeek.value, pickedDay.value);
     }
 
     function selectColor(c) {
@@ -249,7 +267,6 @@ export default {
       }
       pushObject();
       getPlan();
-      console.log(new Date().getMonth(), currentMonth.value);
 
       if (new Date().getMonth() === currentMonth.value) {
         today.value = new Date().getDate();
@@ -343,10 +360,8 @@ export default {
     });
     function pushObject() {
       todos.value = [];
-      calendarColors.value = [];
       for (let i = 0; i < new Date(currentYear.value, currentMonth.value + 1, 0).getDate(); i++) {
         todos.value.push([]);
-        calendarColors.value.push([]);
       }
     }
     function getPlan() {
@@ -363,7 +378,6 @@ export default {
           const ID = a.id;
           if (ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
             todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
-            // calendarColors.value[parseInt(ID.slice(6, 8)) - 1].push(a.color);
           }
         });
 
@@ -416,9 +430,12 @@ export default {
       selectTag,
       addPlan,
       removePlan,
-      //   planColor,
-      calendarColors,
       fetchColorToCalendar,
+      pickedDate,
+      pickedWeek,
+      addDay,
+      pickedDay,
+      pickedMonth,
     };
   },
 };
