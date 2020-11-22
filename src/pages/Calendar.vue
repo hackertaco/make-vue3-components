@@ -183,23 +183,32 @@ export default {
       //만일 달이 10의 자리고 일이 1의 자리라면 2020111
       //만일 달도 10 일도 10이면? 20201111
       //그냥 다 여덟자리로 만들자!
-
       isModalOpen.value = false;
       selectedName.value = "";
       localStorage.setItem(obj.id, JSON.stringify(obj));
       todos.value[today - 1].push(obj);
       selectedTag.value = "";
-      calendarColors.value[today - 1].push(obj.color);
+      // calendarColors.value[today - 1].push(obj.color);
       sortPlan(today);
     }
 
     function fetchColorToCalendar(num) {
-      if (calendarColors.value[num - 1]) {
-        if (calendarColors.value[num - 1].length > 3) {
-          return calendarColors.value[num - 1].slice(0, 3);
+      // if (calendarColors.value[num - 1]) {
+      //   if (calendarColors.value[num - 1].length > 3) {
+      //     return calendarColors.value[num - 1].slice(0, 3);
+      //   } else {
+      //     return calendarColors.value[num - 1];
+      //   }
+      // }
+      const arr = [];
+      if (todos.value[num - 1]) {
+        if (todos.value[num - 1].length > 3) {
+          todos.value[num - 1].forEach((t) => arr.push(t.color)).slice(0, 3);
         } else {
-          return calendarColors.value[num - 1];
+          todos.value[num - 1].forEach((t) => arr.push(t.color));
         }
+        sortPlan(num);
+        return arr;
       }
     }
 
@@ -354,7 +363,7 @@ export default {
           const ID = a.id;
           if (ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
             todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
-            calendarColors.value[parseInt(ID.slice(6, 8)) - 1].push(a.color);
+            // calendarColors.value[parseInt(ID.slice(6, 8)) - 1].push(a.color);
           }
         });
 
@@ -373,7 +382,6 @@ export default {
       //   localStorage.setItem("일요일", "모각코");
       pushObject();
       getPlan();
-
       //매주 화요일에 회의 일정 잡아넣기
     });
     return {
