@@ -365,8 +365,27 @@ export default {
 
         arr.forEach((a) => {
           const ID = a.id;
-          if (ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
+          //selectedRepeat = ['없음']일 때 !
+
+          if (a.repeat[0] === "없음" && ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
             todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
+          } else if (a.repeat[0] === "매일" && (parseInt(ID.slice(0, 4)) < currentYear.value || parseInt(ID.slice(4, 6)) <= currentMonth.value + 1)) {
+            for (let i = parseInt(a.id.slice(6, 8)) - 1; i < daysInMonth(); i += parseInt(a.repeat[1])) {
+              if (i + parseInt(a.repeat[1]) <= daysInMonth()) {
+                todos.value[i].push(a);
+              } else if (i + parseInt(a.repeat[1]) > daysInMonth() && i - new Date(currentYear.value, currentMonth.value, 0).getDate() >= 0) {
+                console.log(new Date(currentYear.value, currentMonth.value, 0).getDate());
+                // i -= new Date(currentYear.value, currentMonth.value, 0).getDate();
+                console.log(i - new Date(currentYear.value, currentMonth.value, 0).getDate());
+                todos.value[i - new Date(currentYear.value, currentMonth.value, 0).getDate()].push(a);
+              }
+            }
+          } else if (a.repeat[0] === "매주") {
+            console.log(1);
+          } else if (a.repeat[0] === "매월") {
+            console.log(2);
+          } else if (a.repeat[0] === "매년") {
+            console.log(3);
           }
         });
 
