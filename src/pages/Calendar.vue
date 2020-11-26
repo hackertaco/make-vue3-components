@@ -370,20 +370,51 @@ export default {
           if (a.repeat[0] === "없음" && ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
             todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
           } else if (a.repeat[0] === "매일" && (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) <= currentMonth.value + 1))) {
-            for (let i = parseInt(a.id.slice(6, 8)) - 1; i < daysInMonth(); ) {
-              todos.value[i].push(a);
-              i += parseInt(a.repeat[1]);
-
-              if (i >= daysInMonth()) {
-                for (let j = i - daysInMonth(); j < parseInt(a.id.slice(6, 8)) - 1; j += parseInt(a.repeat[1])) {
-                  todos.value[j].push(a);
-                  // i -= j;
-                }
-                // console.log(i);
-
-                // todos.value[i].push(a);
+            let i = parseInt(a.id.slice(6, 8)) - 1;
+            let j;
+            //
+            // if (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) === currentMonth.value + 1) {
+            while (i < daysInMonth()) {
+              if (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) === currentMonth.value + 1) {
+                todos.value[i].push(a);
               }
+              i += parseInt(a.repeat[1]);
+              // console.log(i);
             }
+            // } else {
+            j = i;
+            if ((j >= daysInMonth() && parseInt(ID.slice(0, 4)) < currentYear.value) || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) < currentMonth.value + 1)) {
+              console.log(j);
+              j -= new Date(currentYear.value, currentMonth.value, 0).getDate();
+
+              while (j < daysInMonth()) {
+                todos.value[j].push(a);
+                j += parseInt(a.repeat[1]);
+              }
+              // console.log(j);
+            }
+            // else {
+            //   while (j < daysInMonth()) {
+            //     todos.value[j].push(a);
+            //     j += parseInt(a.repeat[1]);
+            //     console.log(j);
+            //   }
+            // }
+            // }
+            // for (let i = parseInt(a.id.slice(6, 8)) - 1; i < daysInMonth(); ) {
+            //   todos.value[i].push(a);
+            //   i += parseInt(a.repeat[1]);
+
+            //   if (i >= daysInMonth()) {
+            //     for (let j = i - daysInMonth(); j < parseInt(a.id.slice(6, 8)) - 1; j += parseInt(a.repeat[1])) {
+            //       todos.value[j].push(a);
+            //       // i -= j;
+            //     }
+            //     // console.log(i);
+
+            //     // todos.value[i].push(a);
+            //   }
+            // }
           } else if (a.repeat[0] === "매주") {
             console.log(1);
           } else if (a.repeat[0] === "매월") {
