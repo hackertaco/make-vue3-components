@@ -20,7 +20,7 @@
     <section class="grid-cols-7 grid gap-x-8 gap-y-2 text-center">
       <p class="w-10 leading-10" v-for="num in startDay()" :key="num"></p>
       <!--startDay가 있는 이유: 1일의 요일 인덱스를 줘서 그걸 가지고 1일 위치를 조정하기 위하여, 숫자를 구했으니 그 자리만큼 비워두면 된다.-->
-      <div :class="currentDateClass(num) || underlineToday(num)" class="w-10 h-10 leading-10 cursor-pointer relative flex justify-center" v-for="num in daysInMonth()" :key="num" @click="showNum(num)">
+      <div :class="currentDateClass(num) || underlineToday(num)" class="w-10 h-10 leading-10 cursor-pointer relative flex justify-center" v-for="num in daysInMonth(currentYear, currentMonth)" :key="num" @click="showNum(num)">
         <div class="absolute" style="">
           {{ num }}
         </div>
@@ -157,7 +157,6 @@ export default {
     const pickedWeek = ref("1");
     const pickedDay = ref([]);
     const pickedMonth = ref("1");
-
     const colors = ["bg-gray-400", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-400", "bg-teal-400", "bg-blue-400", "bg-indigo-400", "bg-purple-400", "bg-pink-400"];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
     const selectedName = ref("");
@@ -198,12 +197,13 @@ export default {
       } else {
         isModalOpen.value = false;
         localStorage.setItem(obj.id, JSON.stringify(obj));
-        todos.value[today - 1].push(obj);
+        // todos.value[today - 1].push(obj);
         selectedName.value = "";
         selectedTag.value = "";
         selectRepeat.value = ["없음"];
         selectedHour.value = "미정";
         selectedColor.value = "bg-gray-400";
+        getPlan();
         sortPlan(today);
       }
     }
@@ -257,8 +257,8 @@ export default {
       selectedTag.value = "";
       selectedTag.value = t;
     }
-    function daysInMonth() {
-      return new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+    function daysInMonth(year, month) {
+      return new Date(year, month + 1, 0).getDate();
       //달의 전체 일수를 구한다.
     }
 
@@ -353,74 +353,69 @@ export default {
         todos.value.push([]);
       }
     }
+
     function getPlan() {
       const arr = [];
 
       if (localStorage.length !== 0) {
         for (let i = 0; i < localStorage.length; i++) {
-          if (localStorage.key(i) !== "loglevel:webpack-dev-server" && localStorage.key(i) !== "csCursors" && localStorage.key(i) !== "csPointers") {
+          if (localStorage.key(i) !== "loglevel:webpack-dev-server" && localStorage.key(i) !== "csCursors" && localStorage.key(i) !== "csPointers" && localStorage.key(i) !== "1") {
             arr.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
           }
         }
 
         arr.forEach((a) => {
           const ID = a.id;
+          const year = currentYear.value;
+          const month = currentMonth.value;
+          // const repeat = a.repeat[1];
+          // const putA = a;
           //selectedRepeat = ['없음']일 때 !
 
-          if (a.repeat[0] === "없음" && ID.slice(0, 6) === currentYear.value.toString() + (currentMonth.value + 1).toString()) {
+          if (a.repeat[0] === "없음" && ID.slice(0, 6) === year.toString() + (month + 1).toString()) {
             todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
-          } else if (a.repeat[0] === "매일" && (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) <= currentMonth.value + 1))) {
-            // 어떤 상황 : 설정한 날로부터, a.repeta[0]만큼 커져야한다.
-            // 문제 상황 : 숫자가 저장이 안된다. ..
-            // 어떻게 해결해볼 수 있을까?
-            //
-            // let j;
-            // let i = parseInt(a.id.slice(6, 8)) - 1;
-            // const getI = () => {
-            //   if (parseInt(ID.slice(0, 4)) === currentYear.value && (parseInt(ID.slice(4, 6)) === currentMonth.value + 1 || parseInt(ID.slice(4, 6)) === currentMonth.value - 12)) {
-            //     while (i < daysInMonth()) {
-            //       todos.value[i].push(a);
-            //       i += parseInt(a.repeat[1]);
-            //     }
-            //   }
-            // };
-            // j = i;
-            // // } else {
-            // // console.log(i);
-            // getI();
-            // console.log(j);
-            // if ((j >= daysInMonth() && parseInt(ID.slice(0, 4)) < currentYear.value) || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) < currentMonth.value + 1)) {
-            //   // console.log(j);
-            //   j -= new Date(currentYear.value, currentMonth.value, 0).getDate();
-            //   // console.log(new Date(currentYear.value, currentMonth.value, 0).getDate());
-            //   // console.log(j);
-            //   while (j < daysInMonth()) {
-            //     if (j >= 0) {
-            //       todos.value[j].push(a);
-            //     }
-            //     j += parseInt(a.repeat[1]);
-            //   }
+          } else if (a.repeat[0] === "매일" && (parseInt(ID.slice(0, 4)) < year || (parseInt(ID.slice(0, 4)) === year && parseInt(ID.slice(4, 6)) <= month + 1))) {
+            // 처음 달에 대비해서 달의 일수를 빼는 작업
+            let mCount = month + 1 - parseInt(ID.slice(4, 6));
+            let yCount = year - parseInt(ID.slice(0, 4));
+            let monthCount = mCount + 12 * yCount;
+            let dayCount = 0;
+            // console.log(monthCount);
+            for (let i = 0; i < monthCount; i++) {
+              // console.log(new Date(year, month - i, 0).getDate());
+              dayCount = dayCount + new Date(year, month - i, 0).getDate();
+            }
+
+            let int = parseInt(a.id.slice(6, 8)) - 1;
+            if (year === parseInt(ID.slice(0, 4)) && month + 1 === parseInt(ID.slice(4, 6))) {
+              while (int < daysInMonth(year, month)) {
+                todos.value[int].push(a);
+                int += parseInt(a.repeat[1]);
+              }
+              localStorage.setItem(1, JSON.stringify(int - daysInMonth(year, month)));
+            }
+            // console.log(int);
+            console.log(JSON.parse(localStorage.getItem(1)));
+            let newInt = JSON.parse(localStorage.getItem(1));
+            if (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) < currentMonth.value + 1)) {
+              while (newInt < daysInMonth(year, month)) {
+                todos.value[newInt].push(a);
+                newInt += parseInt(a.repeat[1]);
+                console.log(newInt);
+              }
+              if (newInt >= daysInMonth(year, month)) {
+                newInt = newInt - daysInMonth(year, month);
+                localStorage.setItem(1, JSON.stringify(newInt));
+              }
+            }
+
+            // while(int < daysInMonth(year, month)){
+            //   todos.value[int].push(a);
+            //   int+= parseInt(a.repeat[1]);
+
             // }
-            // console.log(j);
-            // else {
-            //   while (j < daysInMonth()) {
-            //     todos.value[j].push(a);
-            //     j += parseInt(a.repeat[1]);
-            //     console.log(j);
-            //   }
-            // }
-            // }
-            // for (let i = parseInt(a.id.slice(6, 8)) - 1; i < daysInMonth(); ) {
-            //   todos.value[i].push(a);
-            //   i += parseInt(a.repeat[1]);
-            //   if (i >= daysInMonth()) {
-            //     for (let j = i - daysInMonth(); j < parseInt(a.id.slice(6, 8)) - 1; j += parseInt(a.repeat[1])) {
-            //       todos.value[j].push(a);
-            //       // i -= j;
-            //     }
-            //     // console.log(i);
-            //     // todos.value[i].push(a);
-            //   }
+            // if(int >= daysInMonth(year, month)){
+
             // }
           } else if (a.repeat[0] === "매주") {
             console.log(1);
@@ -438,15 +433,12 @@ export default {
     function removePlan(id) {
       localStorage.removeItem(id);
       todos.value[today.value - 1] = todos.value[today.value - 1].filter((t) => t.id !== id);
+      // getPlan();
     }
 
     onMounted(() => {
-      //매주 화요일과 일요일에는 회의 일정을 집어넣는다.
-      //   localStorage.setItem("화요일", "기획회의");
-      //   localStorage.setItem("일요일", "모각코");
       pushObject();
       getPlan();
-      //매주 화요일에 회의 일정 잡아넣기
     });
     return {
       days,
