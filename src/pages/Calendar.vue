@@ -434,7 +434,9 @@ export default {
               }
             }
           } else if (a.repeat[0] === "매년") {
-            console.log(3);
+            if (month + 1 === parseInt(ID.slice(4, 6))) {
+              todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
+            }
           }
         });
 
