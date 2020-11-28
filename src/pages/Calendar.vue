@@ -395,13 +395,13 @@ export default {
               localStorage.setItem(1, JSON.stringify(int - daysInMonth(year, month)));
             }
             // console.log(int);
-            console.log(JSON.parse(localStorage.getItem(1)));
+            // console.log(JSON.parse(localStorage.getItem(1)));
             let newInt = JSON.parse(localStorage.getItem(1));
             if (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) < currentMonth.value + 1)) {
               while (newInt < daysInMonth(year, month)) {
                 todos.value[newInt].push(a);
                 newInt += parseInt(a.repeat[1]);
-                console.log(newInt);
+                // console.log(newInt);
               }
               if (newInt >= daysInMonth(year, month)) {
                 newInt = newInt - daysInMonth(year, month);
@@ -420,7 +420,19 @@ export default {
           } else if (a.repeat[0] === "매주") {
             console.log(1);
           } else if (a.repeat[0] === "매월") {
-            console.log(2);
+            const monthArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+            const getYear = parseInt(a.repeat[1] / 12);
+            monthArr.map((m) => {
+              m * (a.repeat[1] % 12);
+            });
+            // const getMonth = console.log(getMonth);
+
+            for (let monthItem of monthArr) {
+              if ((monthItem === month + 1 - parseInt(ID.slice(4, 6)) && parseInt(ID.slice(0, 4)) + getYear === year) || (monthItem === month + 13 - parseInt(ID.slice(4, 6)) && parseInt(ID.slice(0, 4)) + getYear + 1 === year)) {
+                todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
+                break;
+              }
+            }
           } else if (a.repeat[0] === "매년") {
             console.log(3);
           }
