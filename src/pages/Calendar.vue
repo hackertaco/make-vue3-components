@@ -155,7 +155,11 @@ export default {
     const repeat = ["없음", "매일", "매주", "매월", "매년"];
     const pickedDate = ref("1");
     const pickedWeek = ref("1");
-    const pickedDay = ref([]);
+    const pickedDay = ref([
+      new Date(currentYear.value, currentMonth.value, today.value).toLocaleString("ko-KR", {
+        weekday: "short",
+      }),
+    ]);
     const pickedMonth = ref("1");
     const colors = ["bg-gray-400", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-400", "bg-teal-400", "bg-blue-400", "bg-indigo-400", "bg-purple-400", "bg-pink-400"];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
@@ -197,7 +201,7 @@ export default {
       } else {
         isModalOpen.value = false;
         localStorage.setItem(obj.id, JSON.stringify(obj));
-        // todos.value[today - 1].push(obj);
+        todos.value[today - 1].push(obj);
         selectedName.value = "";
         selectedTag.value = "";
         selectRepeat.value = ["없음"];
@@ -386,39 +390,85 @@ export default {
               dayCount = dayCount + new Date(year, month - i, 0).getDate();
             }
 
-            let int = parseInt(a.id.slice(6, 8)) - 1;
+            let int = parseInt(ID.slice(6, 8)) - 1;
             if (year === parseInt(ID.slice(0, 4)) && month + 1 === parseInt(ID.slice(4, 6))) {
               while (int < daysInMonth(year, month)) {
                 todos.value[int].push(a);
                 int += parseInt(a.repeat[1]);
               }
-              localStorage.setItem(1, JSON.stringify(int - daysInMonth(year, month)));
-            }
-            // console.log(int);
-            // console.log(JSON.parse(localStorage.getItem(1)));
-            let newInt = JSON.parse(localStorage.getItem(1));
-            if (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6)) < currentMonth.value + 1)) {
-              while (newInt < daysInMonth(year, month)) {
-                todos.value[newInt].push(a);
-                newInt += parseInt(a.repeat[1]);
-                // console.log(newInt);
+              localStorage.removeItem(ID);
+              const obj = {
+                name: a.name,
+                time: a.time,
+                repeat: [a.repeat[0], a.repeat[1], [int - daysInMonth(year, month), month + 1]],
+                color: a.color,
+                tag: a.tag,
+                id: ID,
+              };
+              localStorage.setItem(ID, JSON.stringify(obj));
+            } else if (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6))) < currentMonth.value + 1) {
+              let newInt = JSON.parse(localStorage.getItem(ID)).repeat[2];
+              if ((newInt[1] === 12 && month + 1 === 1) || (newInt[1] !== 12 && newInt[1] !== 1 && newInt[1] < month + 1) || (newInt[1] === 1 && month + 1 !== 12 && month + 1 === 2)) {
+                //다음달
+                console.log("다음달 12월");
+                while (newInt[0] < daysInMonth(year, month)) {
+                  todos.value[newInt[0]].push(a);
+                  newInt[0] += parseInt(a.repeat[1]);
+                  // console.log(newInt);
+                }
+                if (newInt[0] >= daysInMonth(year, month)) {
+                  newInt[0] = newInt[0] - daysInMonth(year, month);
+                  localStorage.removeItem(ID);
+                  const obj2 = {
+                    name: a.name,
+                    time: a.time,
+                    repeat: [a.repeat[0], a.repeat[1], [newInt[0], month + 1]],
+                    color: a.color,
+                    tag: a.tag,
+                    id: ID,
+                  };
+                  localStorage.setItem(ID, JSON.stringify(obj2));
+                }
+              } else if ((newInt[1] === 1 && month + 1 === 12) || (newInt[1] !== 1 && newInt[1] > month + 1) || (newInt[1] === 12 && month + 1 !== 1)) {
+                const obj2 = {
+                  name: a.name,
+                  time: a.time,
+                  repeat: [a.repeat[0], a.repeat[1], [newInt[0], month + 1]],
+                  color: a.color,
+                  tag: a.tag,
+                  id: ID,
+                };
+                if (parseInt(a.repeat[1]) > newInt[0]) {
+                  //계속 다음 달로 옮기다가 그 전달로 옮기려고 할 때
+                  console.log("다음달 > 전달");
+                  newInt[0] = newInt[0] + daysInMonth(year, month);
+                  while (newInt[0] > 0) {
+                    newInt[0] -= parseInt(a.repeat[1]);
+                    todos.value[newInt[0]].push(a);
+                  }
+                  if (newInt[0] <= 0) {
+                    newInt[0] = newInt[0] + daysInMonth(year, month - 1);
+                    localStorage.removeItem(ID);
+                    localStorage.setItem(ID, JSON.stringify(obj2));
+                  }
+                } else {
+                  //계속 전 달로 옮길 때
+                  console.log("전달 > 전달");
+                  while (newInt[0] > 0) {
+                    todos.value[newInt[0]].push(a);
+                    newInt[0] -= parseInt(a.repeat[1]);
+                    // console.log(newInt);
+                  }
+                  if (newInt[0] <= 0) {
+                    newInt[0] = newInt[0] + daysInMonth(year, month - 1);
+                    localStorage.removeItem(ID);
+                    localStorage.setItem(ID, JSON.stringify(obj2));
+                  }
+                }
               }
-              if (newInt >= daysInMonth(year, month)) {
-                newInt = newInt - daysInMonth(year, month);
-                localStorage.setItem(1, JSON.stringify(newInt));
-              }
             }
-
-            // while(int < daysInMonth(year, month)){
-            //   todos.value[int].push(a);
-            //   int+= parseInt(a.repeat[1]);
-
-            // }
-            // if(int >= daysInMonth(year, month)){
-
-            // }
           } else if (a.repeat[0] === "매주") {
-            console.log(1);
+            console.log(2);
           } else if (a.repeat[0] === "매월") {
             const monthArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
             const getYear = parseInt(a.repeat[1] / 12);
