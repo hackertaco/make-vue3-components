@@ -100,7 +100,7 @@
               <span> <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedDate" @input="selectRepeat('매일', pickedDate, '')" /> 일마다 반복</span>
             </div>
             <div v-show="selectedRepeat[0] === '매주'" class="w-full">
-              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedWeek" @input="selectRepeat('매주', pickedWeek, pickedDay)" /> 주 요일마다 반복</div>
+              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedWeek" @input="selectRepeat('매주', pickedWeek, pickedDay)" /> 주마다 반복</div>
               <div class="grid grid-cols-7 place-content-center divide-x text-center">
                 <div v-for="(d, index) in ['월', '화', '수', '목', '금', '토', '일']" :key="index" class="my-2 w-full cursor-pointer hover:bg-gray-200" @click="addDay(d, index)" :class="pickedDay.includes(d) ? 'bg-gray-200' : ''">
                   {{ d }}
@@ -153,7 +153,7 @@ export default {
     const isModalOpen = ref(false);
     const isOpen = ref(false);
     const repeat = ["없음", "매일", "매주", "매월", "매년"];
-    const pickedDate = ref("1");
+    const pickedDate = ref("0");
     const pickedWeek = ref("1");
     const pickedDay = ref([
       new Date(currentYear.value, currentMonth.value, today.value).toLocaleString("ko-KR", {
@@ -207,7 +207,7 @@ export default {
         selectRepeat.value = ["없음"];
         selectedHour.value = "미정";
         selectedColor.value = "bg-gray-400";
-        getPlan();
+        // getPlan();
         sortPlan(today);
       }
     }
@@ -372,55 +372,51 @@ export default {
           const ID = a.id;
           const year = currentYear.value;
           const month = currentMonth.value;
-          // const repeat = a.repeat[1];
-          // const putA = a;
-          //selectedRepeat = ['없음']일 때 !
+          const idYear = parseInt(ID.slice(0, 4));
+          const idMonth = parseInt(ID.slice(4, 6));
+          const idDate = parseInt(ID.slice(6, 8)) - 1;
+          const diff = parseInt(a.repeat[1]);
 
           if (a.repeat[0] === "없음" && ID.slice(0, 6) === year.toString() + (month + 1).toString()) {
-            todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
-          } else if (a.repeat[0] === "매일" && (parseInt(ID.slice(0, 4)) < year || (parseInt(ID.slice(0, 4)) === year && parseInt(ID.slice(4, 6)) <= month + 1))) {
+            todos.value[idDate].push(a);
+          } else if (a.repeat[0] === "매일" && (idYear < year || (idYear === year && idMonth <= month + 1))) {
             // 처음 달에 대비해서 달의 일수를 빼는 작업
-            let mCount = month + 1 - parseInt(ID.slice(4, 6));
-            let yCount = year - parseInt(ID.slice(0, 4));
-            let monthCount = mCount + 12 * yCount;
-            let dayCount = 0;
-            // console.log(monthCount);
-            for (let i = 0; i < monthCount; i++) {
-              // console.log(new Date(year, month - i, 0).getDate());
-              dayCount = dayCount + new Date(year, month - i, 0).getDate();
-            }
 
-            let int = parseInt(ID.slice(6, 8)) - 1;
-            if (year === parseInt(ID.slice(0, 4)) && month + 1 === parseInt(ID.slice(4, 6))) {
-              while (int < daysInMonth(year, month)) {
-                todos.value[int].push(a);
-                int += parseInt(a.repeat[1]);
+            const setRepeat = (m, standard) => {
+              while (standard < daysInMonth(year, m)) {
+                todos.value[standard].push(a);
+                standard += diff;
               }
+              standard -= daysInMonth(year, m);
               localStorage.removeItem(ID);
               const obj = {
                 name: a.name,
                 time: a.time,
-                repeat: [a.repeat[0], a.repeat[1], [int - daysInMonth(year, month), month + 1]],
+                repeat: [a.repeat[0], a.repeat[1], [standard, month + 1]],
                 color: a.color,
                 tag: a.tag,
                 id: ID,
               };
               localStorage.setItem(ID, JSON.stringify(obj));
-            } else if (parseInt(ID.slice(0, 4)) < currentYear.value || (parseInt(ID.slice(0, 4)) === currentYear.value && parseInt(ID.slice(4, 6))) < currentMonth.value + 1) {
+            };
+
+            if (year === idYear && month + 1 === idMonth) {
+              let int = idDate;
+              setRepeat(month, int);
+            } else if (idYear < year || (idYear === year && idMonth < month + 1)) {
               let newInt = JSON.parse(localStorage.getItem(ID)).repeat[2];
-              if ((newInt[1] === 12 && month + 1 === 1) || (newInt[1] !== 12 && newInt[1] !== 1 && newInt[1] < month + 1) || (newInt[1] === 1 && month + 1 !== 12 && month + 1 === 2)) {
-                //다음달
-                if (newInt[0] > parseInt(a.repeat[1])) {
+              if ((newInt[1] === 12 && month + 1 === 1) || (newInt[1] !== 12 && newInt[1] !== 1 && newInt[1] < month + 1) || (newInt[1] === 1 && month + 1 === 2)) {
+                if (newInt[0] > diff) {
                   console.log("전달 > 다음달 ");
                   newInt[0] -= daysInMonth(year, month - 2);
-                  newInt[0] += parseInt(a.repeat[1]);
+                  newInt[0] += diff;
                   while (newInt[0] < daysInMonth(year, month - 1)) {
-                    newInt[0] += parseInt(a.repeat[1]);
+                    newInt[0] += diff;
                   }
                   newInt[0] -= daysInMonth(year, month - 1);
                   while (newInt[0] < daysInMonth(year, month)) {
                     todos.value[newInt[0]].push(a);
-                    newInt[0] += parseInt(a.repeat[1]);
+                    newInt[0] += diff;
                   }
                   newInt[0] -= daysInMonth(year, month);
 
@@ -434,12 +430,12 @@ export default {
                     id: ID,
                   };
                   localStorage.setItem(ID, JSON.stringify(obj1));
-                } else {
-                  console.log("다음달 > 다음달 ");
-
+                } else if (newInt[0] < diff) {
+                  console.log("다음달 > 다음달");
+                  console.log(diff);
                   while (newInt[0] < daysInMonth(year, month)) {
                     todos.value[newInt[0]].push(a);
-                    newInt[0] += parseInt(a.repeat[1]);
+                    newInt[0] += diff;
                     // console.log(newInt);
                   }
                   if (newInt[0] >= daysInMonth(year, month)) {
@@ -456,25 +452,22 @@ export default {
                     localStorage.setItem(ID, JSON.stringify(obj2));
                   }
                 }
-              } else if ((newInt[1] === 1 && month + 1 === 12) || (newInt[1] !== 1 && newInt[1] > month + 1) || (newInt[1] === 12 && month + 1 !== 1)) {
-                if (parseInt(a.repeat[1]) > newInt[0]) {
+              } else if ((newInt[1] === 1 && month + 1 === 12) || (newInt[1] !== 1 && newInt[1] > month + 1) || (newInt[1] === 12 && month + 1 === 11)) {
+                if (diff > newInt[0]) {
                   //계속 다음 달로 옮기다가 그 전달로 옮기려고 할 때
                   console.log("다음달 > 전달");
                   newInt[0] = newInt[0] + daysInMonth(year, month + 1);
                   while (newInt[0] >= 0) {
-                    newInt[0] -= parseInt(a.repeat[1]);
-                    console.log(1);
+                    newInt[0] -= diff;
                   }
                   newInt[0] = newInt[0] + daysInMonth(year, month);
-                  console.log(2);
                   while (newInt[0] >= 0) {
                     todos.value[newInt[0]].push(a);
-                    newInt[0] -= parseInt(a.repeat[1]);
+                    newInt[0] -= diff;
                   }
-                  // if (newInt[0] < 0) {
-                  newInt[0] = newInt[0] + daysInMonth(year, month - 1);
-                  // }
-                  console.log(3);
+                  if (newInt[0] < 0) {
+                    newInt[0] = newInt[0] + daysInMonth(year, month - 1);
+                  }
                   localStorage.removeItem(ID);
                   const obj3 = {
                     name: a.name,
@@ -485,13 +478,12 @@ export default {
                     id: ID,
                   };
                   localStorage.setItem(ID, JSON.stringify(obj3));
-                  console.log(newInt[0]);
                 } else {
                   //계속 전 달로 옮길 때
                   console.log("전달 > 전달");
                   while (newInt[0] >= 0) {
                     todos.value[newInt[0]].push(a);
-                    newInt[0] -= parseInt(a.repeat[1]);
+                    newInt[0] -= diff;
                     // console.log(newInt);
                   }
                   if (newInt[0] < 0) {
@@ -510,8 +502,8 @@ export default {
                 }
               }
             }
-          } else if (a.repeat[0] === "매주") {
-            console.log(2);
+          } else if (a.repeat[0] === "매주" && (parseInt(ID.slice(0, 4)) < year || (parseInt(ID.slice(0, 4)) === year && parseInt(ID.slice(4, 6)) <= month + 1))) {
+            // ['매주', 반복 주수, 요일 배열]
           } else if (a.repeat[0] === "매월") {
             const monthArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
             const getYear = parseInt(a.repeat[1] / 12);
