@@ -1,7 +1,10 @@
 <template>
   <div class="m-auto" style="font-family: 'Cantarell', sans-serif">
     <section class="flex flex-col w-full items-center align-middle">
-      <h2 class="m-auto font-bold text-3xl" style="font-family: 'Permanent Marker', cursive">
+      <h2
+        class="m-auto font-bold text-3xl"
+        style="font-family: 'Permanent Marker', cursive"
+      >
         {{ currentMonthName }}
       </h2>
       <h2 class="m-auto font-bold">
@@ -9,8 +12,12 @@
       </h2>
     </section>
     <section class="flex justify-between my-4">
-      <button class="px-2 hover:animate-bounce" style="outline: none" @click="prev()">👈</button>
-      <button class="px-2 hover:animate-bounce" style="outline: none" @click="next()">👉</button>
+      <button class="px-2 hover:animate-bounce" style="outline: none" @click="prev()">
+        👈
+      </button>
+      <button class="px-2 hover:animate-bounce" style="outline: none" @click="next()">
+        👉
+      </button>
     </section>
     <section class="grid-cols-7 grid gap-x-8 gap-y-2 text-center">
       <p class="w-10 leading-10" v-for="day in days" :key="day">
@@ -20,36 +27,62 @@
     <section class="grid-cols-7 grid gap-x-8 gap-y-2 text-center">
       <p class="w-10 leading-10" v-for="num in startDay()" :key="num"></p>
       <!--startDay가 있는 이유: 1일의 요일 인덱스를 줘서 그걸 가지고 1일 위치를 조정하기 위하여, 숫자를 구했으니 그 자리만큼 비워두면 된다.-->
-      <div :class="currentDateClass(num) || underlineToday(num)" class="w-10 h-10 leading-10 cursor-pointer relative flex justify-center" v-for="num in daysInMonth(currentYear, currentMonth)" :key="num" @click="showNum(num)">
+      <div
+        :class="currentDateClass(num) || underlineToday(num)"
+        class="w-10 h-10 leading-10 cursor-pointer relative flex justify-center"
+        v-for="num in daysInMonth(currentYear, currentMonth)"
+        :key="num"
+        @click="showNum(num)"
+      >
         <div class="absolute" style="">
           {{ num }}
         </div>
         <div class="flex flex-col ml-10 w-10 justify-start h-10" style="">
-          <div class="w-2 h-2 rounded-full" v-for="(calendarColor, index) in fetchColorToCalendar(num)" :key="index" :class="calendarColor"></div>
+          <div
+            class="w-2 h-2 rounded-full"
+            v-for="(calendarColor, index) in fetchColorToCalendar(num)"
+            :key="index"
+            :class="calendarColor"
+          ></div>
         </div>
       </div>
     </section>
 
     <section class="w-full h-48 mt-8" style="font-family: 'Jua', sans-serif">
-      <div class="border rounded-2xl max-h-full" style="padding: 1rem; overflow-y: scroll">
+      <div
+        class="border rounded-2xl max-h-full"
+        style="padding: 1rem; overflow-y: scroll"
+      >
         <div class="border-b-2 border-gray-300 w-full m-auto p-2 flex justify-between">
           <div>{{ today }}일</div>
           <button @click="isModalOpen = true">+</button>
         </div>
-        <div class="p-2 text-black" v-for="(todo, index) in todos" v-show="today === index + 1 && todo.length >= 1" :key="index">
-          <div v-for="t in todo" :key="t" class="flex justify-between align-middle items-center mt-3 border-b pb-3">
+        <div
+          class="p-2 text-black"
+          v-for="(todo, index) in todos"
+          v-show="today === index + 1 && todo.length >= 1"
+          :key="index"
+        >
+          <div
+            v-for="t in todo"
+            :key="t"
+            class="flex justify-between align-middle items-center mt-3 border-b pb-3"
+          >
             <div class="flex items-center">
               <div :class="t.color" class="w-5 h-5 rounded-full mr-3 leading-5"></div>
               <div class="mr-3 text-2xl h-6 leading-6">
                 {{ t.name }}
               </div>
-              <div class="w-10 text-xl" v-text="t.time === '미정' ? '' : t.time + '시'"></div>
+              <div
+                class="w-10 text-xl"
+                v-text="t.time === '미정' ? '' : t.time + '시'"
+              ></div>
             </div>
             <div class="flex h-6 leading-6">
               <div v-show="t.tag" class="w-20 mr-3 text-center bg-yellow-400 rounded-xl">
                 {{ t.tag }}
               </div>
-              <button class="mr-3">수정</button>
+              <button class="mr-3" @click="editPlan(t.id)">수정</button>
               <button @click="removePlan(t.id)">삭제</button>
             </div>
           </div>
@@ -69,46 +102,126 @@
     >
       <template #title>일정</template>
       <template #body @click="isOpen = false">
-        <input type="text" placeholder="일정을 입력하세요" class="border-b border-gray-600 mb-2 ml-1" v-model="selectedName" />
+        <input
+          type="text"
+          placeholder="일정을 입력하세요"
+          class="border-b border-gray-600 mb-2 ml-1"
+          v-model="selectedName"
+        />
         <div class="flex items-center h-10 cursor-pointer mb-2">
           <div @click="isOpen = !isOpen" class="mr-2">시작시간</div>
           <div @click="isOpen = !isOpen">
-            <svg v-if="isOpen" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-triangle fill-current text-black mr-2">
-              <path xmlns="http://www.w3.org/2000/svg" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <svg
+              v-if="isOpen"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-triangle fill-current text-black mr-2"
+            >
+              <path
+                xmlns="http://www.w3.org/2000/svg"
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
             </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-triangle transform rotate-180 fill-current text-black mr-2">
-              <path xmlns="http://www.w3.org/2000/svg" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-triangle transform rotate-180 fill-current text-black mr-2"
+            >
+              <path
+                xmlns="http://www.w3.org/2000/svg"
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
             </svg>
           </div>
-          <div v-show="isOpen" class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 ml-16 mt-24 absolute">
-            <div class="hover:bg-indigo-500 hover:text-white ml-1" v-for="hour in 24" :key="hour" @click="selectTime(hour)">
+          <div
+            v-show="isOpen"
+            class="bg-white rounded py-2 border shadow-xl h-20 overflow-scroll w-8 ml-16 mt-24 absolute"
+          >
+            <div
+              class="hover:bg-indigo-500 hover:text-white ml-1"
+              v-for="hour in 24"
+              :key="hour"
+              @click="selectTime(hour)"
+            >
               {{ hour }}
             </div>
           </div>
-          <div class="text-black" v-show="selectedHour" @click="isOpen = !isOpen">{{ selectedHour }}</div>
+          <div class="text-black" v-show="selectedHour" @click="isOpen = !isOpen">
+            {{ selectedHour }}
+          </div>
         </div>
 
         <div class="mb-2">
           <div class="mb-4">반복</div>
           <div class="flex justify-between border-l">
-            <div class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200 mb-2 cursor-pointer" v-for="r in repeat" :key="r" @click="selectRepeat(r, '', '')" :class="selectedRepeat[0] === r ? 'bg-gray-200' : ''">
+            <div
+              class="w-1/5 text-center border-gray-400 border-r hover:bg-gray-200 mb-2 cursor-pointer"
+              v-for="r in repeat"
+              :key="r"
+              @click="selectRepeat(r, '', '')"
+              :class="selectedRepeat[0] === r ? 'bg-gray-200' : ''"
+            >
               {{ r }}
             </div>
           </div>
           <div class="my-2 w-full">
             <div v-show="selectedRepeat[0] === '매일'">
-              <span> <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedDate" @input="selectRepeat('매일', pickedDate, '')" /> 일마다 반복</span>
+              <span>
+                <input
+                  class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none"
+                  v-model.number="pickedDate"
+                  @input="selectRepeat('매일', pickedDate, '')"
+                />
+                일마다 반복</span
+              >
             </div>
             <div v-show="selectedRepeat[0] === '매주'" class="w-full">
-              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedWeek" @input="selectRepeat('매주', pickedWeek, pickedDay)" /> 주마다 반복</div>
+              <div class="">
+                매
+                <input
+                  class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none"
+                  v-model.number="pickedWeek"
+                  @input="selectRepeat('매주', pickedWeek, pickedDay)"
+                />
+                주마다 반복
+              </div>
               <div class="grid grid-cols-7 place-content-center divide-x text-center">
-                <div v-for="(d, index) in ['월', '화', '수', '목', '금', '토', '일']" :key="index" class="my-2 w-full cursor-pointer hover:bg-gray-200" @click="addDay(d, index)" :class="pickedDay.includes(d) ? 'bg-gray-200' : ''">
+                <div
+                  v-for="(d, index) in ['월', '화', '수', '목', '금', '토', '일']"
+                  :key="index"
+                  class="my-2 w-full cursor-pointer hover:bg-gray-200"
+                  @click="addDay(d, index)"
+                  :class="pickedDay.includes(d) ? 'bg-gray-200' : ''"
+                >
                   {{ d }}
                 </div>
               </div>
             </div>
             <div v-show="selectedRepeat[0] === '매월'">
-              <div class="">매 <input class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none" v-model.number="pickedMonth" @input="selectRepeat('매월', pickedMonth, '')" /> 개월마다 반복</div>
+              <div class="">
+                매
+                <input
+                  class="my-2 w-1/12 border rounded text-center focus:outline-none hover:outline-black appearance-none"
+                  v-model.number="pickedMonth"
+                  @input="selectRepeat('매월', pickedMonth, '')"
+                />
+                개월마다 반복
+              </div>
             </div>
             <div v-show="selectedRepeat[0] === '매년'"></div>
           </div>
@@ -117,23 +230,46 @@
         <div class="mb-2">
           <div class="mb-2 grid grid-flow-col">
             <div class="h-5 leading-5">색깔</div>
-            <div v-show="selectedColor" class="w-5 h-5 rounded-full border absolute ml-8" :class="selectedColor"></div>
+            <div
+              v-show="selectedColor"
+              class="w-5 h-5 rounded-full border absolute ml-8"
+              :class="selectedColor"
+            ></div>
           </div>
           <div class="flex justify-between rounded-md bg-white py-2 px-2 overflow-x-auto">
-            <div class="rounded-full h-5 w-5 border cursor-pointer hover:border-gray-500 hover:border-2" v-for="(c, index) in colors" :class="c" :key="index" @click="selectColor(c)"></div>
+            <div
+              class="rounded-full h-5 w-5 border cursor-pointer hover:border-gray-500 hover:border-2"
+              v-for="(c, index) in colors"
+              :class="c"
+              :key="index"
+              @click="selectColor(c)"
+            ></div>
           </div>
         </div>
 
         <div>
           <div class="mb-2">태그</div>
           <div class="flex justify-around py-1 px-1 ml-2">
-            <div class="w-20 mr-4 text-center rounded-xl border-gray-200 shadow-xl cursor-pointer hover:bg-red-500" v-for="t in tag" :key="t" @click="selectTag(t)" :class="selectedTag === t ? 'bg-red-400' : 'bg-yellow-400'">
+            <div
+              class="w-20 mr-4 text-center rounded-xl border-gray-200 shadow-xl cursor-pointer hover:bg-red-500"
+              v-for="t in tag"
+              :key="t"
+              @click="selectTag(t)"
+              :class="selectedTag === t ? 'bg-red-400' : 'bg-yellow-400'"
+            >
               {{ t }}
             </div>
           </div>
         </div>
       </template>
-      <template #button><button class="w-full text-center mt-4 mb-2 p-2 border rounded shadow-xl hover:border-gray-600" @click="addPlan(today)">추가</button></template>
+      <template #button
+        ><button
+          class="w-full text-center mt-4 mb-2 p-2 border rounded shadow-xl hover:border-gray-600"
+          @click="addPlan(today)"
+        >
+          추가
+        </button></template
+      >
     </Modal>
   </div>
 </template>
@@ -156,12 +292,26 @@ export default {
     const pickedDate = ref("0");
     const pickedWeek = ref("1");
     const pickedDay = ref([
-      new Date(currentYear.value, currentMonth.value, today.value).toLocaleString("ko-KR", {
-        weekday: "short",
-      }),
+      new Date(currentYear.value, currentMonth.value, today.value).toLocaleString(
+        "ko-KR",
+        {
+          weekday: "short",
+        }
+      ),
     ]);
     const pickedMonth = ref("1");
-    const colors = ["bg-gray-400", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-400", "bg-teal-400", "bg-blue-400", "bg-indigo-400", "bg-purple-400", "bg-pink-400"];
+    const colors = [
+      "bg-gray-400",
+      "bg-red-400",
+      "bg-orange-400",
+      "bg-yellow-400",
+      "bg-green-400",
+      "bg-teal-400",
+      "bg-blue-400",
+      "bg-indigo-400",
+      "bg-purple-400",
+      "bg-pink-400",
+    ];
     const tag = ref(["회의", "생일", "이벤트", "기타"]);
     const selectedName = ref("");
     const selectedHour = ref("미정");
@@ -305,10 +455,16 @@ export default {
     }
 
     function currentDateClass(num) {
-      const calendarFullDate = new Date(currentYear.value, currentMonth.value, num).toDateString();
+      const calendarFullDate = new Date(
+        currentYear.value,
+        currentMonth.value,
+        num
+      ).toDateString();
       const currentFullDate = new Date().toDateString();
       //toDateString을 쓰는 이유는, new date를 했을 때 수반되는 시간 때문이다.
-      return currentFullDate === calendarFullDate ? "text-gray bg-yellow-300 rounded-full" : "";
+      return currentFullDate === calendarFullDate
+        ? "text-gray bg-yellow-300 rounded-full"
+        : "";
     }
 
     function showNum(num) {
@@ -323,9 +479,17 @@ export default {
           return 1;
         } else if (typeof todo1.time === "number" && typeof todo2.time === "string") {
           return -1;
-        } else if (typeof todo1.time === "number" && typeof todo2.time === "number" && todo1.time > todo2.time) {
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "number" &&
+          todo1.time > todo2.time
+        ) {
           return 1;
-        } else if (typeof todo1.time === "number" && typeof todo2.time === "number" && todo1.time < todo2.time) {
+        } else if (
+          typeof todo1.time === "number" &&
+          typeof todo2.time === "number" &&
+          todo1.time < todo2.time
+        ) {
           return -1;
         }
       });
@@ -353,7 +517,11 @@ export default {
     });
     function pushObject() {
       todos.value = [];
-      for (let i = 0; i < new Date(currentYear.value, currentMonth.value + 1, 0).getDate(); i++) {
+      for (
+        let i = 0;
+        i < new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+        i++
+      ) {
         todos.value.push([]);
       }
     }
@@ -363,7 +531,12 @@ export default {
 
       if (localStorage.length !== 0) {
         for (let i = 0; i < localStorage.length; i++) {
-          if (localStorage.key(i) !== "loglevel:webpack-dev-server" && localStorage.key(i) !== "csCursors" && localStorage.key(i) !== "csPointers" && localStorage.key(i) !== "1") {
+          if (
+            localStorage.key(i) !== "loglevel:webpack-dev-server" &&
+            localStorage.key(i) !== "csCursors" &&
+            localStorage.key(i) !== "csPointers" &&
+            localStorage.key(i) !== "1"
+          ) {
             arr.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
           }
         }
@@ -377,9 +550,15 @@ export default {
           const idDate = parseInt(ID.slice(6, 8)) - 1;
           const diff = parseInt(a.repeat[1]);
 
-          if (a.repeat[0] === "없음" && ID.slice(0, 6) === year.toString() + (month + 1).toString()) {
+          if (
+            a.repeat[0] === "없음" &&
+            ID.slice(0, 6) === year.toString() + (month + 1).toString()
+          ) {
             todos.value[idDate].push(a);
-          } else if (a.repeat[0] === "매일" && (idYear < year || (idYear === year && idMonth <= month + 1))) {
+          } else if (
+            a.repeat[0] === "매일" &&
+            (idYear < year || (idYear === year && idMonth <= month + 1))
+          ) {
             // 처음 달에 대비해서 달의 일수를 빼는 작업
 
             const setRepeat = (m, standard) => {
@@ -405,7 +584,11 @@ export default {
               setRepeat(month, int);
             } else if (idYear < year || (idYear === year && idMonth < month + 1)) {
               let newInt = JSON.parse(localStorage.getItem(ID)).repeat[2];
-              if ((newInt[1] === 12 && month + 1 === 1) || (newInt[1] !== 12 && newInt[1] !== 1 && newInt[1] < month + 1) || (newInt[1] === 1 && month + 1 === 2)) {
+              if (
+                (newInt[1] === 12 && month + 1 === 1) ||
+                (newInt[1] !== 12 && newInt[1] !== 1 && newInt[1] < month + 1) ||
+                (newInt[1] === 1 && month + 1 === 2)
+              ) {
                 if (newInt[0] > diff) {
                   console.log("전달 > 다음달 ");
                   newInt[0] -= daysInMonth(year, month - 2);
@@ -452,7 +635,11 @@ export default {
                     localStorage.setItem(ID, JSON.stringify(obj2));
                   }
                 }
-              } else if ((newInt[1] === 1 && month + 1 === 12) || (newInt[1] !== 1 && newInt[1] > month + 1) || (newInt[1] === 12 && month + 1 === 11)) {
+              } else if (
+                (newInt[1] === 1 && month + 1 === 12) ||
+                (newInt[1] !== 1 && newInt[1] > month + 1) ||
+                (newInt[1] === 12 && month + 1 === 11)
+              ) {
                 if (diff > newInt[0]) {
                   //계속 다음 달로 옮기다가 그 전달로 옮기려고 할 때
                   console.log("다음달 > 전달");
@@ -502,7 +689,12 @@ export default {
                 }
               }
             }
-          } else if (a.repeat[0] === "매주" && (parseInt(ID.slice(0, 4)) < year || (parseInt(ID.slice(0, 4)) === year && parseInt(ID.slice(4, 6)) <= month + 1))) {
+          } else if (
+            a.repeat[0] === "매주" &&
+            (parseInt(ID.slice(0, 4)) < year ||
+              (parseInt(ID.slice(0, 4)) === year &&
+                parseInt(ID.slice(4, 6)) <= month + 1))
+          ) {
             // ['매주', 반복 주수, 요일 배열]
           } else if (a.repeat[0] === "매월") {
             const monthArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -513,7 +705,12 @@ export default {
             // const getMonth = console.log(getMonth);
 
             for (let monthItem of monthArr) {
-              if ((monthItem === month + 1 - parseInt(ID.slice(4, 6)) && parseInt(ID.slice(0, 4)) + getYear === year) || (monthItem === month + 13 - parseInt(ID.slice(4, 6)) && parseInt(ID.slice(0, 4)) + getYear + 1 === year)) {
+              if (
+                (monthItem === month + 1 - parseInt(ID.slice(4, 6)) &&
+                  parseInt(ID.slice(0, 4)) + getYear === year) ||
+                (monthItem === month + 13 - parseInt(ID.slice(4, 6)) &&
+                  parseInt(ID.slice(0, 4)) + getYear + 1 === year)
+              ) {
                 todos.value[parseInt(ID.slice(6, 8)) - 1].push(a);
                 break;
               }
@@ -531,10 +728,16 @@ export default {
 
     function removePlan(id) {
       localStorage.removeItem(id);
-      todos.value[today.value - 1] = todos.value[today.value - 1].filter((t) => t.id !== id);
+      todos.value[today.value - 1] = todos.value[today.value - 1].filter(
+        (t) => t.id !== id
+      );
       // getPlan();
     }
 
+    function editPlan(id) {
+      console.log(id);
+      //우선 다시 모달을 열어야 한다.
+    }
     onMounted(() => {
       pushObject();
       getPlan();
@@ -577,6 +780,7 @@ export default {
       addDay,
       pickedDay,
       pickedMonth,
+      editPlan,
     };
   },
 };
