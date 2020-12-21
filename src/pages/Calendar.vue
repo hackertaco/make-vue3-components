@@ -82,7 +82,7 @@
               <div v-show="t.tag" class="w-20 mr-3 text-center bg-yellow-400 rounded-xl">
                 {{ t.tag }}
               </div>
-              <button class="mr-3" @click="editPlan(t.id)">수정</button>
+              <button class="mr-3" @click="editPlan(t)">수정</button>
               <button @click="removePlan(t.id)">삭제</button>
             </div>
           </div>
@@ -734,9 +734,15 @@ export default {
       // getPlan();
     }
 
-    function editPlan(id) {
-      console.log(id);
+    function editPlan(plan) {
       //우선 다시 모달을 열어야 한다.
+      isModalOpen.value = true;
+      selectedName.value = plan.name;
+      selectedHour.value = plan.hour;
+      selectedRepeat.value = plan.repeat;
+      selectedColor.value = plan.color;
+      selectedTag.value = plan.tag;
+      //만약 바뀌면?
     }
     onMounted(() => {
       pushObject();
